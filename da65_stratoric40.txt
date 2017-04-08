@@ -1,0 +1,89 @@
+        # This is a comment. It extends to the end of the line
+        GLOBAL {
+            OUTPUTNAME      "stratoric40.asm";
+            INPUTNAME       "B7STRA40.rom";
+            STARTADDR       $C000;
+            PAGELENGTH      0;                  # No paging
+            CPU             "6502";
+        };
+
+
+RANGE { START $C000;  END   $C179;    TYPE ByteTable; NAME "garbage1";   COMMENT "X";  };	
+		
+RANGE { START $C17A;  END   $C184;    TYPE TextTable; NAME "str_WARNING";   COMMENT "X";  };	
+RANGE { START $C186;  END   $C199;    TYPE TextTable; NAME "str_DOS_ALTERED";   COMMENT "X";  };	
+RANGE { START $C1b1;  END   $C1d9;    TYPE TextTable; NAME "str_IN_DRIVE";   COMMENT "X";  };	
+
+RANGE { START $C1db;  END   $C1ea;    TYPE TextTable; NAME "str_LOAD";   COMMENT "X";  };	
+
+RANGE { START $C496;  END   $C7b0;    TYPE TextTable; NAME "str_BASIC";   COMMENT "X";  };	
+
+RANGE { START $FC00; END   $FD85;     TYPE Code;   NAME "START_STRATORIC"; COMMENT "$FC00";   };
+
+RANGE { START $FBC7; END   $FBFA;     TYPE TextTable;   NAME "str_copyright"; COMMENT "XXX";   };
+
+RANGE { START $FD86; END   $FDb4;     TYPE TextTable;   NAME "str_STRATORIC"; COMMENT "$FD86";   };
+
+
+RANGE { START $FDBF; END   $FDD1;     TYPE ByteTable;   NAME "ADDRESS_0X238_TABLE"; COMMENT "XX";   };
+RANGE { START $FDD2; END   $FDDA;     TYPE ByteTable;   NAME "ADDRESS_0X228_TABLE"; COMMENT "XX";   };
+
+
+
+
+RANGE { START $FDDB; END   $FDE6;     TYPE Code;   NAME "FIXME1"; COMMENT "$FDDB";   };
+
+RANGE { START $FDE7; END   $FDFB;     TYPE Code;   NAME "FIXME2"; COMMENT "$FDE7";   };
+
+RANGE { START $FDFC; END   $FE18;     TYPE Code;   NAME "INIT_VIA1"; COMMENT "$FDFC";   };
+
+
+
+RANGE { START $FE19;  END   $FFFC;    TYPE BYTETABLE; COMMENT "free_bytes";  };
+
+
+
+
+#RANGE { START $FFC5;  END   $FFE5;    TYPE BYTETABLE; COMMENT "free_bytes";  };
+
+
+
+
+LABEL { NAME "skip";  ADDR  $FC6E;   };
+LABEL { NAME "skip2";  ADDR  $FC4D;   };
+
+
+
+		
+#VIA 1
+LABEL { NAME "V1DRB";  ADDR  $0300;  Size 1;  };
+LABEL { NAME "V1DRA";  ADDR  $0301;  Size 1;  };
+LABEL { NAME "V1DDRB"; ADDR  $0302;  Size 1;  };
+LABEL { NAME "V1DDRA"; ADDR  $0303;  Size 1;  };
+
+LABEL { NAME "V1T1";   ADDR  $0304;  Size 2;  };
+LABEL { NAME "V1T1L";  ADDR  $0306;  Size 2;  };
+LABEL { NAME "V1T2";   ADDR  $0308;  Size 2;  };
+
+LABEL { NAME "V1ACR";  ADDR  $030b;  Size 1;  };
+LABEL { NAME "V1PCR";  ADDR  $030c;  Size 1;  };
+LABEL { NAME "V1IFR";  ADDR  $030d;  Size 1;  };
+LABEL { NAME "V1ER";   ADDR  $030e;  Size 1;  };
+LABEL { NAME "V1DRAB"; ADDR  $030f;  Size 1;  };		
+
+		
+#VIA 2
+LABEL { NAME "V2DRB";  ADDR  $0320;  Size 1;  };
+LABEL { NAME "V2DRA";  ADDR  $0321;  Size 1;  };
+LABEL { NAME "V2DDRB"; ADDR  $0322;  Size 1;  };
+LABEL { NAME "V2DDRA"; ADDR  $0323;  Size 1;  };
+
+LABEL { NAME "V2T1";   ADDR  $0324;  Size 2;  };
+LABEL { NAME "V2T1L";  ADDR  $0326;  Size 2;  };
+LABEL { NAME "V2T2";   ADDR  $0328;  Size 2;  };
+
+LABEL { NAME "V2ACR";  ADDR  $032b;  Size 1;  };
+LABEL { NAME "V2PCR";  ADDR  $032c;  Size 1;  };
+LABEL { NAME "V2IFR";  ADDR  $032d;  Size 1;  };
+LABEL { NAME "V2ER";   ADDR  $032e;  Size 1;  };
+LABEL { NAME "V2DRAB"; ADDR  $032f;  Size 1;  };        
