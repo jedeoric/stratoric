@@ -131,57 +131,70 @@ START_STRATORIC:
 LFC39:
 	jsr     READ_KEYBOARD                   ; FC39 20 DB FD                  ..
     bne     init_first_boot                 ; FC3C D0 30                    .0
-    ldy     #$06                            ; FC3E A0 06                    ..
+    ldy     #$06                            ; atmos rom selected
     lda     #$47                            ; FC40 A9 47                    .G
     ldx     $0247                           ; FC42 AE 47 02                 .G.
     cpx     #$4C                            ; FC45 E0 4C                    .L
     beq     skip2                           ; FC47 F0 04                    ..
-    ldy     #$05                            ; FC49 A0 05                    ..
+    ldy     #$05                            ; Oric 1 rom selected
     lda     #$2B                            ; FC4B A9 2B                    .+
 skip2:
 	ldx     #$02                            ; FC4D A2 02                    ..
     sta     $B904                           ; FC4F 8D 04 B9                 ...
     stx     $B905                           ; FC52 8E 05 B9                 ...
-    lda     LFC6B                           ; FC55 AD 6B FC                 .k.
-    sta     $B903                           ; FC58 8D 03 B9                 ...
-    lda     LFD5A                           ; FC5B AD 5A FD                 .Z.
-    sta     LB900                           ; FC5E 8D 00 B9                 ...
+    lda     LFC6B                           ; load jmp
+    sta     $B903                           ; and store it
+    lda     LFD5A                           ; 
+    sta     LB900                           ; 
     lda     #$21                            ; FC61 A9 21                    .!
     ldx     #$03                            ; FC63 A2 03                    ..
     sta     $B901                           ; FC65 8D 01 B9                 ...
     stx     $B902                           ; FC68 8E 02 B9                 ...
+	; here $b900 contains
+	; sty $0321 ; switch to correct ROM
+	; jmp $0247 ($f8b2) or $22B it depends of the Rom selected
+	
 LFC6B:  jmp     LB900                           ; FC6B 4C 00 B9                 L..
 
 ; ----------------------------------------------------------------------------
 ; First boot : initialize values for atmos rom
 init_first_boot:
-        jsr     FIXME2                          ; FC6E 20 E7 FD                  ..
-        beq     LFC81                           ; FC71 F0 0E                    ..
-        lda     #$03                            ; FC73 A9 03                    ..
-        ldy     #$EC                            ; FC75 A0 EC                    ..
-        sta     L0008                           ; FC77 85 08                    ..
-        sty     $09                             ; FC79 84 09                    ..
-        lda     #$05                            ; FC7B A9 05                    ..
-        ldy     #$00                            ; FC7D A0 00                    ..
-        beq     LFC8D                           ; FC7F F0 0C                    ..
-LFC81:  lda     #$22                            ; FC81 A9 22                    ."
-        ldy     #$EE                            ; FC83 A0 EE                    ..
-        sta     L0008                           ; FC85 85 08                    ..
-        sty     $09                             ; FC87 84 09                    ..
-        lda     #$06                            ; FC89 A9 06                    ..
-        ldy     #$80                            ; FC8B A0 80                    ..
-LFC8D:  sty     $00                             ; FC8D 84 00                    ..
-        sta     $01                             ; FC8F 85 01                    ..
-        sta     $1C                             ; FC91 85 1C                    ..
-        sta     $0247                           ; FC93 8D 47 02                 .G.
-        ldx     #$EF                            ; FC96 A2 EF                    ..
-LFC98:  lda     COPY_CODE_TO_B800+2,x             ; FC98 BD CF FC                 ...
-        sta     $B7FF,x                         ; FC9B 9D FF B7                 ...
-        dex                                     ; FC9E CA                       .
-        bne     LFC98                           ; FC9F D0 F7                    ..
-        bit     $00                             ; FCA1 24 00                    $.
-        bpl     LFCB2                           ; FCA3 10 0D                    ..
-        ldx     #$12                            ; FCA5 A2 12                    ..
+    jsr     FIXME2                          ; FC6E 20 E7 FD                  ..
+    beq     start_atmos_mode                           ; if A=0 then Atmos
+    ; Oric -1 management
+    lda     #$03                            ; FC73 A9 03                    ..
+    ldy     #$EC                            ; FC75 A0 EC                    ..
+    sta     L0008                           ; FC77 85 08                    ..
+    sty     $09                             ; FC79 84 09                    ..
+    lda     #$05                            ; load Oric 1 rom
+    ldy     #$00                            ; FC7D A0 00                    ..
+    beq     LFC8D                           ; FC7F F0 0C                    ..
+	; atmos management
+start_atmos_mode
+LFC81:
+    lda     #$22                            ; FC81 A9 22                    ."
+    ldy     #$EE                            ; FC83 A0 EE                    ..
+    sta     L0008                           ; FC85 85 08                    ..
+    sty     $09                             ; FC87 84 09                    ..
+    lda     #$06                            ; FC89 A9 06                    ..
+    ldy     #$80                            ; FC8B A0 80                    ..
+LFC8D:
+    sty     $00                             ; FC8D 84 00                    ..
+    sta     $01                             ; Store 6 in $01, it will be used to start ATMOS ROM
+    sta     $1C                             ; FC91 85 1C                    ..
+    sta     $0247                           ; FC93 8D 47 02                 .G.
+    ldx     #$EF                            ; FC96 A2 EF                    ..
+LFC98:
+.(
+loop
+	lda     COPY_CODE_TO_B800+2,x             ; FC98 BD CF FC                 ...
+    sta     $B7FF,x                         ; FC9B 9D FF B7                 ...
+    dex                                     ; FC9E CA                       .
+    bne     loop                           ; FC9F D0 F7                    ..
+.)	
+    bit     $00                             ; FCA1 24 00                    $.
+    bpl     LFCB2                           ; FCA3 10 0D                    ..
+    ldx     #$12                            ; FCA5 A2 12                    ..
 LFCA7:  lda     ADDRESS_0X238_TABLE,x           ; FCA7 BD BF FD                 ...
         sta     $0238,x                         ; FCAA 9D 38 02                 .8.
         dex                                     ; FCAD CA                       .
@@ -206,23 +219,23 @@ COPY_CODE_TO_B800                   ; $FCCF
 ; ----------------------------------------------------------------------------
 ; $FCD0
 COPY_C000_FROM_ROM_TO_C400_RAM_OVERLAY:
-		; This code copy $c000 from bank 7 (stratoric) into overlay ram
-        lda     (RES),y                         ; get $c000 from stratoric
-        pha                                     ; pha and pla because we used all register (don't forget that X and Y are used to loop in this routine)
-        lda     #$00                            ; Switch to overlay ram
-        sta     V2DRA                           ; 
-        pla                                     ; FCD8 68                       h
-        sta     (RESB),y                        ; store into $c400 in overlay ram
-        lda     #$07                            ; bank 7
-        sta     V2DRA                           ; switch to stratotic bank
-        iny                                     ; 
-        bne     COPY_C000_FROM_ROM_TO_C400_RAM_OVERLAY; loop :)
-        inc     RES+1                           ; inc to jump to $c100, $c200 and so on ..
-        inc     RESB+1                          ; inc to jump to $c400, $c500 and so on ..
-        dex                                     ; 
-        bne     COPY_C000_FROM_ROM_TO_C400_RAM_OVERLAY; FCE8 D0 E6              ..
-        stx     V2DRA                           ; Finished, here we switch to OVL RAM
-        ldx     #$0A                            ; copy 10 bytes
+    ; This code copy $c000 from bank 7 (stratoric) into overlay ram
+    lda     (RES),y                         ; get $c000 from stratoric
+    pha                                     ; pha and pla because we used all register (don't forget that X and Y are used to loop in this routine)
+    lda     #$00                            ; Switch to overlay ram
+    sta     V2DRA                           ; 
+    pla                                     ; FCD8 68                       h
+    sta     (RESB),y                        ; store into $c400 in overlay ram
+    lda     #$07                            ; bank 7
+    sta     V2DRA                           ; switch to stratotic bank
+    iny                                     ; 
+    bne     COPY_C000_FROM_ROM_TO_C400_RAM_OVERLAY; loop :)
+    inc     RES+1                           ; inc to jump to $c100, $c200 and so on ..
+    inc     RESB+1                          ; inc to jump to $c400, $c500 and so on ..
+    dex                                     ; 
+    bne     COPY_C000_FROM_ROM_TO_C400_RAM_OVERLAY; FCE8 D0 E6              ..
+    stx     V2DRA                           ; Finished, here we switch to OVL RAM
+    ldx     #$0A                            ; copy 10 bytes
 .(		
 loop:
 	lda     $B8E4,x                         ; FCEF BD E4 B8                 ...
@@ -231,28 +244,29 @@ loop:
     dex                                     ; FCF8 CA                       .
     bpl     loop                           ; FCF9 10 F4                    ..
 .)		
-        lda     $01                             ; FCFB A5 01                    ..
-        sta     $C67E                           ; FCFD 8D 7E C6                 .~.
-        sta     $C77E                           ; FD00 8D 7E C7                 .~.
-        lda     $00                             ; FD03 A5 00                    ..
-        asl                                     ; FD05 0A                       .
-        rol                                     ; FD06 2A                       *
-        sta     $C007                           ; FD07 8D 07 C0                 ...
-        lda     $01                             ; FD0A A5 01                    ..
-        sta     V2DRA                           ; FD0C 8D 21 03                 .!.
-        ldx     #$FF                            ; FD0F A2 FF                    ..
-        stx     $A6                             ; FD11 86 A6                    ..
-        stx     BASIC11_HIMEM_MAX_ADRESS        ; FD13 8E C1 02                 ...
-        stx     BASIC11_PARAMS+1                ; FD16 8E E1 02                 ...
-        bit     $00                             ; FD19 24 00                    $.
-        bpl     LFD2F                           ; FD1B 10 12                    ..
-        lda     #$00                            ; FD1D A9 00                    ..
-        sta     $0260                           ; FD1F 8D 60 02                 .`.
-        sta     BASIC11_MEMORY_SIZE             ; FD22 8D 20 02                 . .
-        ldy     #$97                            ; FD25 A0 97                    ..
-        sty     $A7                             ; FD27 84 A7                    ..
-        sty     BASIC11_HIMEM_MAX_ADRESS+1      ; FD29 8C C2 02                 ...
-        jmp     LF8AC                           ; FD2C 4C AC F8                 L..
+    lda     $01                             ; Load 6 value, and store it on ram overlau
+    sta     $C67E                           ; FCFD 8D 7E C6                 .~.
+    sta     $C77E                           ; FD00 8D 7E C7                 .~.
+    lda     $00                             ; FD03 A5 00                    ..
+    asl                                     ; FD05 0A                       .
+    rol                                     ; FD06 2A                       *
+    sta     $C007                           ; FD07 8D 07 C0                 ...
+	; Dunno
+    lda     $01                             ; it contains the bank 6 (for atmos rom)
+    sta     V2DRA                           ; Switch to atmos bank
+    ldx     #$FF                            ; FD0F A2 FF                    ..
+    stx     $A6                             ; FD11 86 A6                    ..
+    stx     BASIC11_HIMEM_MAX_ADRESS        ; FD13 8E C1 02                 ...
+    stx     BASIC11_PARAMS+1                ; FD16 8E E1 02                 ...
+    bit     $00                             ; FD19 24 00                    $.
+    bpl     LFD2F                           ; FD1B 10 12                    ..
+    lda     #$00                            ; FD1D A9 00                    ..
+    sta     $0260                           ; FD1F 8D 60 02                 .`.
+    sta     BASIC11_MEMORY_SIZE             ; FD22 8D 20 02                 . .
+    ldy     #$97                            ; FD25 A0 97                    ..
+    sty     $A7                             ; FD27 84 A7                    ..
+    sty     BASIC11_HIMEM_MAX_ADRESS+1      ; FD29 8C C2 02                 ...
+    jmp     LF8AC                           ; Jump to $F8AC
 
 ; ----------------------------------------------------------------------------
 LFD2F:  ldy     #$BF                            ; FD2F A0 BF                    ..
@@ -295,9 +309,9 @@ LFD65:  lda     #$10                            ; FD65 A9 10                    
         lda     #$B3                            ; FD6F A9 B3                    ..
         ldy     #$B8                            ; FD71 A0 B8                    ..
         jsr     L001A                           ; FD73 20 1A 00                  ..
-        lda     #$00                            ; FD76 A9 00                    ..
-        sta     V2DRA                           ; FD78 8D 21 03                 .!.
-        sta     SEDORIC_CODE                    ; FD7B 8D 00 C0                 ...
+        lda     #$00                            ; switch to overlay ram
+        sta     V2DRA                           ; 		
+        sta     SEDORIC_CODE                    ; sedoric start 
         sta     $00                             ; FD7E 85 00                    ..
         jmp     LC400                           ; FD80 4C 00 C4                 L..
 
@@ -326,12 +340,12 @@ str_STRATORIC:
 ; ----------------------------------------------------------------------------
 ; XX
 ADDRESS_0X238_TABLE:
-		jmp $f77c
-		jmp $eb78
-		jmp $f5c1
-        jmp $f865
-		jmp $b868
-		jmp $f8b2
+    jmp $f77c
+    jmp $eb78
+    jmp $f5c1
+    jmp $f865
+    jmp $b868
+    jmp $f8b2
     .byte   $40                     ; FDCF B2 F8 40                 ..@
 ; XX
 ADDRESS_0X228_TABLE:
@@ -341,19 +355,21 @@ ADDRESS_0X228_TABLE:
 ; ----------------------------------------------------------------------------
 ; $FDDB
 READ_KEYBOARD:
-        ldx     #$DF                            ; FDDB A2 DF                    ..
-        lda     #$0E                            ; FDDD A9 0E                    ..
-        jsr     INIT_VIA1                       ; FDDF 20 FC FD                  ..
-        lda     #$05                            ; FDE2 A9 05                    ..
-        jmp     LFDF3                           ; FDE4 4C F3 FD                 L..
+    ldx     #$DF                            ; FDDB A2 DF                    ..
+    lda     #$0E                            ; FDDD A9 0E                    ..
+    jsr     INIT_VIA1                       ; FDDF 20 FC FD                  ..
+    lda     #$05                            ; FDE2 A9 05                    ..
+    jmp     LFDF3                           ; FDE4 4C F3 FD                 L..
 
 ; ----------------------------------------------------------------------------
 ; $FDE7
-FIXME2: ldx     #$DF                            ; FDE7 A2 DF                    ..
-        lda     #$0E                            ; FDE9 A9 0E                    ..
-        jsr     INIT_VIA1                       ; FDEB 20 FC FD                  ..
-        lda     #$00                            ; FDEE A9 00                    ..
-        jmp     LFDF3                           ; FDF0 4C F3 FD                 L..
+FIXME2:
+	; Read Keyboard to start on Oric 1 ?
+    ldx     #$DF                            ; FDE7 A2 DF                    ..
+    lda     #$0E                            ; FDE9 A9 0E                    ..
+    jsr     INIT_VIA1                       ; FDEB 20 FC FD                  ..
+    lda     #$00                            ; FDEE A9 00                    ..
+    jmp     LFDF3                           ; FDF0 4C F3 FD                 L..
 
 ; ----------------------------------------------------------------------------
 LFDF3:  sta     V1DRB                           ; FDF3 8D 00 03                 ...
@@ -378,17 +394,18 @@ INIT_VIA1:
 
 ; ----------------------------------------------------------------------------
 	
-	.dsb 229,$ff
+    .dsb 229,$ff
     .byte  $00,$FC ; Dunno why there is that :/
-	.dsb 252,$ff
+    .dsb 252,$ff
 ; ----------------------------------------------------------------------------
 NMI_VECTOR:
-	.byt $ff,$ff
+    .byt $ff,$ff
     
 RESET_VECTOR:
-        .byt <START_STRATORIC                 ; FFFC 00 FC                    ..
-		.byt >START_STRATORIC                 
+    .byt <START_STRATORIC                 ; FFFC 00 FC                    ..
+    .byt >START_STRATORIC                 
 ; ----------------------------------------------------------------------------
 IRQ_VECTOR:
-        .byte   $FF                             ; FFFE FF                       .
-LFFFF:  .byte   $FF                             ; FFFF FF                       .
+    .byte   $FF                             ; FFFE FF                       .
+LFFFF:
+.byte   $FF                             ; FFFF FF                       .
