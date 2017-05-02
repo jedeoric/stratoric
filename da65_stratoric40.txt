@@ -8,53 +8,60 @@
         };
 
 
-RANGE { START $C000;  END   $C179;    TYPE ByteTable; NAME "garbage1";   COMMENT "X";  };	
+
+LABEL { NAME "SEDORIC_TRAV0"; ADDR $F2; Size 1; };
+LABEL { NAME "SEDORIC_TRAV1"; ADDR $F3; Size 1; };
+LABEL { NAME "SEDORIC_TRAV2"; ADDR $F4; Size 1; };
+LABEL { NAME "SEDORIC_TRAV3"; ADDR $F5; Size 1; };
+LABEL { NAME "SEDORIC_TRAV4"; ADDR $F6; Size 1; };
+LABEL { NAME "SEDORIC_TRAV5"; ADDR $F7; Size 1; };
+LABEL { NAME "SEDORIC_TRAV6"; ADDR $F8; Size 1; };
+LABEL { NAME "SEDORIC_TRAV7"; ADDR $F9; Size 1; };
+
+
+
+LABEL { NAME "BASIC11_INTERPRETER_VECTOR";  ADDR  $f0; Size 2; };
+
+
+LABEL {
+	NAME	"STACK";
+	ADDR	$0100;
+	SIZE	255;
+};
+
+
+LABEL { NAME "BASIC11_KEYBOARD_MATRIX";              ADDR $0208; Size 2; comment "For keyboard decoding";};
+LABEL { NAME "BASIC11_PATTERN_ARG";                  ADDR $020C; Size 1; };
+LABEL { NAME "BASIC11_LOWERCASE_UPPERCASE";          ADDR $0213; Size 1; };
+LABEL { NAME "BASIC11_MEMORY_SIZE";                  ADDR $0220; Size 1; };
+LABEL { NAME "BASIC11_KEYBOARD_GET_VECTOR";          ADDR $023C; Size 2; comment "Vecteur Prendre un caractère au clavier (EB78 ATMOS et 045B SEDORIC)";};
+LABEL { NAME "BASIC11_IRQ_VECTOR";                   ADDR $0245; Size 2; comment "Vecteur IRQ (EE22 ATMOS et 0488 SEDORIC)";};
+LABEL { NAME "BASIC10_IRQ_VECTOR";                   ADDR $0229; Size 2; comment "Vecteur IRQ Oric -1";};
+LABEL { NAME "BASIC10_IRQ2_VECTOR";                  ADDR $022C; Size 2; comment "Vecteur IRQ Oric -1";};
+LABEL { NAME "BASIC11_X";                            ADDR $0248; Size 2; comment "Vecteur NMI (F8B2 ATMOS et 04C4 SEDORIC)";};
+LABEL { NAME "BASIC11_KEYBOARD_DURATION_REPEAT";     ADDR $024E; Size 1; comment "Only on atmos";};
+LABEL { NAME "BASIC11_KEYBOARD_REPEAT";              ADDR $024F; Size 1; comment "Only on atmos";};
+LABEL { NAME "BASIC11_NUMBER_OF_COLUMN_FOR_PRINTER"; ADDR $0256; Size 1; };
+LABEL { NAME "BASIC11_NUMBER_OF_LINES_FOR_PRINTER";  ADDR $0257; Size 1; };
+LABEL { NAME "BASIC11_CLOADING_SPEED";               ADDR $024D; Size 1; }; #slow =1 fast=0
+LABEL { NAME "BASIC11_X_TEXT";                       ADDR $0268; Size 1; };
+LABEL { NAME "BASIC11_Y_TEXT";                       ADDR $0269; Size 1; };				
+LABEL { NAME "BASIC11_FLG";                          ADDR $026A; Size 1; };
+LABEL { NAME "BASIC11_COLOR_CURSOR";                 ADDR $0271; Size 1; comment "Couleur du curseur (#01 ATMOS et #00 SEDORIC)";};
+LABEL { NAME "BASIC11_BLINK_CURSOR";                 ADDR $0274; Size 2; comment "Clignotement curseur (#0004 ATMOS et #000B SEDORIC)";};
+LABEL { NAME "BASIC11_TIMER3_VALUE";                 ADDR $0276; Size 2; comment "Timer 3 (#6B81 ATMOS et #F6D7 SEDORIC)";};
+LABEL { NAME "BASIC11_DUNNO_VALUE";                  ADDR $02A0; Size 1; comment "(#FF ATMOS et #05 SEDORIC)";};
+LABEL { NAME "BASIC11_DUNNO_VALUE2";                 ADDR $02BE; Size 1; comment "(#80 ATMOS et #FF SEDORIC)";};
+LABEL { NAME "BASIC11_HIMEM_MAX_ADRESS";             ADDR $02C1; Size 2; comment "X";};
+LABEL { NAME "BASIC11_LAST_KEY_PRESSED";             ADDR $02DF; Size 1; comment "X";};
+LABEL { NAME "BASIC11_PARAMS";                       ADDR $02E0; Size 8; };		
+LABEL { NAME "BASIC11_BANG_VECTOR";                  ADDR $02F5; Size 2; comment "Vecteur ! (D336 ATMOS et 0467 SEDORIC)";};
+LABEL { NAME "BASIC11_ESPERLUETTE_VECTOR";           ADDR $02FC; Size 2; comment "Vecteur &() (D336 ATMOS et 0461 SEDORIC)";};
+
+
 		
-RANGE { START $C17A;  END   $C184;    TYPE TextTable; NAME "str_WARNING";   COMMENT "X";  };	
-RANGE { START $C186;  END   $C199;    TYPE TextTable; NAME "str_DOS_ALTERED";   COMMENT "X";  };	
-RANGE { START $C1b1;  END   $C1d9;    TYPE TextTable; NAME "str_IN_DRIVE";   COMMENT "X";  };	
-
-RANGE { START $C1db;  END   $C1ea;    TYPE TextTable; NAME "str_LOAD";   COMMENT "X";  };	
-
-RANGE { START $C496;  END   $C7b0;    TYPE TextTable; NAME "str_BASIC";   COMMENT "X";  };	
-
-RANGE { START $FC00; END   $FD85;     TYPE Code;   NAME "START_STRATORIC"; COMMENT "$FC00";   };
-
-RANGE { START $FBC7; END   $FBFA;     TYPE TextTable;   NAME "str_copyright"; COMMENT "XXX";   };
-
-RANGE { START $FD86; END   $FDb4;     TYPE TextTable;   NAME "str_STRATORIC"; COMMENT "$FD86";   };
 
 
-RANGE { START $FDBF; END   $FDD1;     TYPE ByteTable;   NAME "ADDRESS_0X238_TABLE"; COMMENT "XX";   };
-RANGE { START $FDD2; END   $FDDA;     TYPE ByteTable;   NAME "ADDRESS_0X228_TABLE"; COMMENT "XX";   };
-
-
-
-
-RANGE { START $FDDB; END   $FDE6;     TYPE Code;   NAME "FIXME1"; COMMENT "$FDDB";   };
-
-RANGE { START $FDE7; END   $FDFB;     TYPE Code;   NAME "FIXME2"; COMMENT "$FDE7";   };
-
-RANGE { START $FDFC; END   $FE18;     TYPE Code;   NAME "INIT_VIA1"; COMMENT "$FDFC";   };
-
-
-
-RANGE { START $FE19;  END   $FFFC;    TYPE BYTETABLE; COMMENT "free_bytes";  };
-
-
-
-
-#RANGE { START $FFC5;  END   $FFE5;    TYPE BYTETABLE; COMMENT "free_bytes";  };
-
-
-
-
-LABEL { NAME "skip";  ADDR  $FC6E;   };
-LABEL { NAME "skip2";  ADDR  $FC4D;   };
-
-
-
-		
 #VIA 1
 LABEL { NAME "V1DRB";  ADDR  $0300;  Size 1;  };
 LABEL { NAME "V1DRA";  ADDR  $0301;  Size 1;  };
@@ -87,3 +94,217 @@ LABEL { NAME "V2PCR";  ADDR  $032c;  Size 1;  };
 LABEL { NAME "V2IFR";  ADDR  $032d;  Size 1;  };
 LABEL { NAME "V2ER";   ADDR  $032e;  Size 1;  };
 LABEL { NAME "V2DRAB"; ADDR  $032f;  Size 1;  };        
+
+		
+		
+LABEL {
+	NAME	"MICRODISC_FDC_COMMAND";
+	ADDR	$310;
+};
+LABEL {
+	NAME	"MICRODISC_FDC_TRACK";
+	ADDR	$311;
+};
+LABEL {
+	NAME	"MICRODISC_FDC_SECTOR";
+	ADDR	$312;
+};
+LABEL {
+	NAME	"MICRODISC_FDC_DATA";
+	ADDR	$313;
+};
+LABEL {
+	NAME	"MICRODISC_CONTROL";
+	ADDR	$314;
+};
+LABEL {
+	NAME	"MICRODISC_DRQ";
+	ADDR	$318;
+};
+
+
+
+LABEL {
+	NAME	"DO_EXEVEC";
+	ADDR	$453;
+	COMMENT	"Exec code inside overlay";
+};
+
+LABEL {
+	NAME	"DO_RAMROM";
+	ADDR	$477;
+	COMMENT	"Switch from ROM to Overlay and vice-versa";
+};
+
+LABEL {
+	NAME	"SED_IRQ";
+	ADDR	$488;
+	COMMENT	"Replaces IRQ";
+};
+
+LABEL {
+	NAME	"SED_COLDSTART";
+	ADDR	$4a8;
+	COMMENT	"Replaces COLDSTART";
+};
+
+LABEL {
+	NAME	"DO_IRQRAM";
+	ADDR	$4b3;
+	COMMENT	"forwards IRQ/NMI from overlay to ROM";
+};
+
+LABEL {
+	NAME	"EXERAM";
+	ADDR	$4ec;
+	SIZE	3;
+};
+
+LABEL {
+	NAME	"EXEVEC";
+	ADDR	$4ef;
+	SIZE	3;
+};
+
+LABEL {
+	NAME	"RAMROM";
+	ADDR	$4f2;
+	SIZE	3;
+};
+
+LABEL {
+	NAME	"IRQRAM";
+	ADDR	$4f5;
+	SIZE	3;
+};
+
+LABEL {
+	NAME	"NMIRAM";
+	ADDR	$4f8;
+	SIZE	3;
+};
+
+LABEL {
+	NAME	"MICRODISC_CONTROL_SHADOW";
+	ADDR	$4fb;
+	COMMENT	"Caches the control register as it's write-only";
+};
+
+LABEL {
+	NAME	"FLAGIF";
+	ADDR	$4fc;
+	COMMENT	"b7=1 if inside IF";
+};
+
+LABEL {
+	NAME	"SEDORIC_IDERROR";
+	ADDR	$4fd;
+	COMMENT	"id of Error";
+};
+
+LABEL {
+	NAME	"NOLIGN";
+	ADDR	$4fe;
+	COMMENT	"Line of Error";
+	SIZE	2;
+};
+	
+####################################################################### $c000
+
+
+
+
+
+
+#RANGE { START $C000;  END   $C179;    TYPE ByteTable; NAME "garbage1";   COMMENT "X";  };	
+		
+#RANGE { START $C17A;  END   $C184;    TYPE TextTable; NAME "str_WARNING";   COMMENT "X";  };	
+#RANGE { START $C186;  END   $C199;    TYPE TextTable; NAME "str_DOS_ALTERED";   COMMENT "X";  };	
+#RANGE { START $C1b1;  END   $C1d9;    TYPE TextTable; NAME "str_IN_DRIVE";   COMMENT "X";  };	
+
+#RANGE { START $C1db;  END   $C1ea;    TYPE TextTable; NAME "str_LOAD";   COMMENT "X";  };	
+
+#RANGE { START $C496;  END   $C7b0;    TYPE TextTable; NAME "str_BASIC";   COMMENT "X";  };	
+
+
+RANGE {
+	TYPE	TEXTTABLE;
+	START	$C9BF;
+	NAME	"SEDORIC_STR";
+	END		$CBCC;
+};
+
+
+
+RANGE { START $F640; END   $F740;     TYPE ByteTable;   NAME "XXXX"; COMMENT "$F640";   };
+
+
+RANGE { START $FA29; END   $FA39;     TYPE ByteTable;   NAME "XXXX"; COMMENT "$FA29";   };
+RANGE { START $FAcb; END   $FB1a;     TYPE ByteTable;   NAME "XXXX1"; COMMENT "$FAD4";   };
+
+RANGE { START $FB1B; END   $FBC6;     TYPE ByteTable;   NAME "XXXX"; COMMENT "$FB1B";   };
+
+RANGE { START $FBC7; END   $FBFA;     TYPE TextTable;   NAME "str_copyright"; COMMENT "XXX";   };
+
+RANGE { START $FC00; END $FCCE; TYPE Code; NAME "START_STRATORIC"; COMMENT "$FC00"; };
+
+RANGE { START $FCCF; END $FD84; TYPE Code; NAME "COPY_CODE_TO_B800"; COMMENT "$FCCF"; };
+
+
+
+
+
+RANGE { START $FD85; END   $FDb4;     TYPE TextTable;   NAME "str_STRATORIC"; COMMENT "$FD86";   };
+
+
+RANGE { START $FDBF; END   $FDD1;     TYPE ByteTable;   NAME "ADDRESS_0X238_TABLE"; COMMENT "XX";   };
+RANGE { START $FDD2; END   $FDDA;     TYPE ByteTable;   NAME "ADDRESS_0X228_TABLE"; COMMENT "XX";   };
+
+
+
+
+RANGE { START $FDDB; END   $FDE6;     TYPE Code;   NAME "READ_KEYBOARD"; COMMENT "$FDDB";   };
+
+RANGE { START $FDE7; END   $FDFB;     TYPE Code;   NAME "FIXME2"; COMMENT "$FDE7";   };
+
+RANGE { START $FDFC; END   $FE18;     TYPE Code;   NAME "INIT_VIA1"; COMMENT "$FDFC";   };
+
+
+
+RANGE { START $FE19;  END   $FFF9;    TYPE BYTETABLE; COMMENT "free_bytes";  };
+
+
+
+
+#RANGE { START $FFC5;  END   $FFE5;    TYPE BYTETABLE; COMMENT "free_bytes";  };
+
+
+
+
+LABEL { NAME "init_first_boot";  ADDR  $FC6E; comment "First boot : initialize values for atmos rom"; };
+LABEL { NAME "skip2";  ADDR  $FC4D;   };
+
+
+RANGE {
+	TYPE	ADDRTABLE;
+	START	$fffa;
+	NAME	"NMI_VECTOR";
+	END	$fffb;
+};
+RANGE {
+	TYPE	ADDRTABLE;
+	START	$fffc;
+	NAME	"RESET_VECTOR";
+	END	$fffd;
+};
+RANGE {
+	TYPE	WORDTABLE;
+# da65 bug ? Error: Address out of range: 00010000
+#	TYPE	ADDRTABLE;
+	START	$fffe;
+	NAME	"IRQ_VECTOR";
+	END	$ffff;
+};
+
+
+		
