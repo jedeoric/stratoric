@@ -633,30 +633,30 @@ LABEL {
 	ADDR	$cfe9;
 };
 
-LABEL {
-	NAME	"XRWTS_INTERNAL_LOOP";
-	ADDR	$cfeb;
-	comment "Entrée secondaire pour rebouclage";
-};
+#LABEL {
+#	NAME	"XRWTS_INTERNAL_LOOP";
+	#ADDR	$cfeb;
+	#comment "Entrée secondaire pour rebouclage";
+#};
 
 
 
-LABEL {
-	NAME	"XRWTS_ONCE";
-	ADDR	$cff3;
-};
+#LABEL {
+#	NAME	"XRWTS_ONCE";
+	#ADDR	$cff3;
+#};
 
 
 
 
 LABEL {
 	NAME	"read_data";
-	ADDR	$D081;
+	ADDR	$D073;
 };
 
 LABEL {
 	NAME	"write_data";
-	ADDR	$D093;
+	ADDR	$D085;
 };
 
 Range {

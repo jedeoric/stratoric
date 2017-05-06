@@ -103,6 +103,7 @@
 
 *=$fc00
 START_STRATORIC:
+.(
     sei                                     ; FC00 78                       x
     cld                                     ; FC01 D8                       .
     ldx     #$FF                            ; FC02 A2 FF                    ..
@@ -153,7 +154,7 @@ skip2:
 	; here $b900 contains
 	; sty $0321 ; switch to correct ROM
 	; jmp $0247 ($f8b2) or $22B it depends of the Rom selected
-	
+.)	
 LFC6B:  jmp     LB900                           ; FC6B 4C 00 B9                 L..
 
 ; ----------------------------------------------------------------------------

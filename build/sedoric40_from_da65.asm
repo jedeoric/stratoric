@@ -1,5 +1,5 @@
 ; da65 V2.15
-; Created:    2017-05-06 20:23:36
+; Created:    2017-05-07 00:02:41
 ; Input file: B7STRA40.rom
 ; Page:       1
 
@@ -984,16 +984,10 @@ XRWTS:  php                                     ; CFCD 08                       
 ; ----------------------------------------------------------------------------
 XRWTS_INTERNAL:
         nop                                     ; CFE9 EA                       .
-        .byte   $A0                             ; CFEA A0                       .
-; Entrée secondaire pour rebouclage
-XRWTS_INTERNAL_LOOP:
-        .byte   $03                             ; CFEB 03                       .
+        ldy     #$03                            ; CFEA A0 03                    ..
 LCFEC:  sty     SEDORIC_XRWTS_RETRY             ; CFEC 8C 06 C0                 ...
         ldy     #$08                            ; CFEF A0 08                    ..
-        .byte   $8C                             ; CFF1 8C                       .
-        .byte   $07                             ; CFF2 07                       .
-XRWTS_ONCE:
-        .byte   $C0                             ; CFF3 C0                       .
+        sty     SEDORIC_NUMBER_OF_RETRY         ; CFF1 8C 07 C0                 ...
 LCFF4:  pha                                     ; CFF4 48                       H
         sei                                     ; CFF5 78                       x
         stx     SEDORIC_TYPE_OF_ERROR           ; CFF6 8E 05 C0                 ...
@@ -1051,33 +1045,31 @@ LD05A:  lda     MICRODISC_CONTROL_SHADOW        ; D05A AD FB 04                 
         and     #$F0                            ; D066 29 F0                    ).
         cmp     #$E0                            ; D068 C9 E0                    ..
         cli                                     ; D06A 58                       X
-        beq     LD073                           ; D06B F0 06                    ..
+        beq     read_data                       ; D06B F0 06                    ..
         and     #$20                            ; D06D 29 20                    ) 
-        bne     LD085                           ; D06F D0 14                    ..
+        bne     write_data                      ; D06F D0 14                    ..
         nop                                     ; D071 EA                       .
         nop                                     ; D072 EA                       .
-LD073:  lda     MICRODISC_DRQ                   ; D073 AD 18 03                 ...
-        bmi     LD073                           ; D076 30 FB                    0.
+read_data:
+        lda     MICRODISC_DRQ                   ; D073 AD 18 03                 ...
+        bmi     read_data                       ; D076 30 FB                    0.
         lda     MICRODISC_FDC_DATA              ; D078 AD 13 03                 ...
         sta     (SEDORIC_TRAV1),y               ; D07B 91 F3                    ..
         iny                                     ; D07D C8                       .
-        bne     LD073                           ; D07E D0 F3                    ..
-        .byte   $E6                             ; D080 E6                       .
-read_data:
-        .byte   $F4                             ; D081 F4                       .
-        jmp     LD073                           ; D082 4C 73 D0                 Ls.
+        bne     read_data                       ; D07E D0 F3                    ..
+        inc     SEDORIC_TRAV2                   ; D080 E6 F4                    ..
+        jmp     read_data                       ; D082 4C 73 D0                 Ls.
 
 ; ----------------------------------------------------------------------------
-LD085:  lda     MICRODISC_DRQ                   ; D085 AD 18 03                 ...
-        bmi     LD085                           ; D088 30 FB                    0.
+write_data:
+        lda     MICRODISC_DRQ                   ; D085 AD 18 03                 ...
+        bmi     write_data                      ; D088 30 FB                    0.
         lda     (SEDORIC_TRAV1),y               ; D08A B1 F3                    ..
         sta     MICRODISC_FDC_DATA              ; D08C 8D 13 03                 ...
         iny                                     ; D08F C8                       .
-        bne     LD085                           ; D090 D0 F3                    ..
-        .byte   $E6                             ; D092 E6                       .
-write_data:
-        .byte   $F4                             ; D093 F4                       .
-        jmp     LD085                           ; D094 4C 85 D0                 L..
+        bne     write_data                      ; D090 D0 F3                    ..
+        inc     SEDORIC_TRAV2                   ; D092 E6 F4                    ..
+        jmp     write_data                      ; D094 4C 85 D0                 L..
 
 ; ----------------------------------------------------------------------------
         nop                                     ; D097 EA                       .
