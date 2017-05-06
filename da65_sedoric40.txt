@@ -3,7 +3,8 @@
             OUTPUTNAME      "build/sedoric40_from_da65.asm";
             INPUTNAME       "B7STRA40.rom";
             STARTADDR       $c400;
-			#INPUTOFFS		$3c00;
+			#INPUTOFFS		$3900;
+			INPUTSIZE		$3c00;
             PAGELENGTH      0;                  # No paging
             CPU             "6502";
         };
@@ -321,11 +322,6 @@ LABEL {
 	COMMENT	"adresse de traitement des erreurs (D685 par ex)";
 };
 
-
-
-
-
-
 RANGE {
 	TYPE	BYTETABLE;
 	START	$c024;
@@ -356,10 +352,6 @@ LABEL {
 	SIZE	1;
 	COMMENT	"mode clavier (b6=ACCENT, b7=AZERTY)";
 };
-
-
-
-
 
 LABEL {
 
@@ -666,10 +658,6 @@ LABEL {
 	NAME	"write_data";
 	ADDR	$D093;
 };
-
-
-
-
 
 Range {
 	TYPE	Code;
@@ -1232,9 +1220,6 @@ RANGE {
 	COMMENT	"X";
 };
 
-
-
-
 LABEL {
 	NAME	"CMD_USING";
 	ADDR	$ee99;
@@ -1245,7 +1230,6 @@ LABEL {
 	ADDR	$ef4f;
 	comment "$ef4f";
 };
-
 
 RANGE { START $EF54; END $EF54; TYPE BYTETABLE;
 	comment "BIT $XXXX jump 2 bytes";
