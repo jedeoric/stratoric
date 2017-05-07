@@ -1,7 +1,7 @@
 @echo off
 
 rem ..\..\..\cc65-win\bin\da65.exe  -i da65_stratoric40.txt --comments 4 
-..\..\..\cc65-win\bin\da65.exe  -i da65_sedoric40.txt --comments 4 
+rem ..\..\..\cc65-win\bin\da65.exe  -i da65_sedoric40.txt --comments 4 
 cd src\
 rem %OSDK%\bin\xa  page400_atmos.asm -o  page400_atmos.o
 rem %OSDK%\bin\xa  page400_oric1.asm -o  page400_oric1.o

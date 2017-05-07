@@ -1,5 +1,5 @@
 ; da65 V2.15
-; Created:    2017-05-07 00:02:41
+; Created:    2017-05-07 11:51:26
 ; Input file: B7STRA40.rom
 ; Page:       1
 
@@ -5229,25 +5229,25 @@ LEDAD:  ldy     #$00                            ; EDAD A0 00                    
         beq     LEDFC                           ; EDB6 F0 44                    .D
         iny                                     ; EDB8 C8                       .
         cmp     #$08                            ; EDB9 C9 08                    ..
-        bne     SEDORIC_STR_NOT_ALLOWED         ; EDBB D0 09                    ..
+        bne     LEDC6                           ; EDBB D0 09                    ..
         txa                                     ; EDBD 8A                       .
         beq     LEDFC                           ; EDBE F0 3C                    .<
         dex                                     ; EDC0 CA                       .
         jsr     LEE73                           ; EDC1 20 73 EE                  s.
         bne     LED64                           ; EDC4 D0 9E                    ..
-; X
-SEDORIC_STR_NOT_ALLOWED:
-        .byte   $C8,$C9,$09,$D0,$0E,$E8,$E4,$F2 ; EDC6 C8 C9 09 D0 0E E8 E4 F2  ........
-        .byte   $F0,$05                         ; EDCE F0 05                    ..
-        .byte   " "                             ; EDD0 20                        
-; ----------------------------------------------------------------------------
-        ror     $EE,x                           ; EDD1 76 EE                    v.
+LEDC6:  iny                                     ; EDC6 C8                       .
+        cmp     #$09                            ; EDC7 C9 09                    ..
+        bne     LEDD9                           ; EDC9 D0 0E                    ..
+        inx                                     ; EDCB E8                       .
+        cpx     SEDORIC_TRAV0                   ; EDCC E4 F2                    ..
+        beq     LEDD5                           ; EDCE F0 05                    ..
+        jsr     LEE76                           ; EDD0 20 76 EE                  v.
         bne     LED93                           ; EDD3 D0 BE                    ..
-        dex                                     ; EDD5 CA                       .
+LEDD5:  dex                                     ; EDD5 CA                       .
         jmp     LEDFC                           ; EDD6 4C FC ED                 L..
 
 ; ----------------------------------------------------------------------------
-        iny                                     ; EDD9 C8                       .
+LEDD9:  iny                                     ; EDD9 C8                       .
         cmp     #$0A                            ; EDDA C9 0A                    ..
         bne     LEDED                           ; EDDC D0 0F                    ..
         clc                                     ; EDDE 18                       .
