@@ -1,5 +1,5 @@
 ; da65 V2.15
-; Created:    2017-05-07 11:51:26
+; Created:    2017-05-08 22:11:21
 ; Input file: B7STRA40.rom
 ; Page:       1
 
@@ -3593,25 +3593,23 @@ LE250:  lda     SEDORIC_BUF1,y                  ; E250 B9 00 C1                 
         sta     SEDORIC_SECTOR                  ; E259 8D 02 C0                 ...
         bit     $C04D                           ; E25C 2C 4D C0                 ,M.
         bvs     LE24A                           ; E25F 70 E9                    p.
-        .byte   $4C                             ; E261 4C                       L
-        .byte   $73                             ; E262 73                       s
-; X
-SEDORIC_STR_NOT_EMPTY_DIRECTORY:
-        .byte   $DA                             ; E263 DA                       .
-LE264:  .byte   $18                             ; E264 18                       .
-        .byte   "$"                             ; E265 24                       $
-LE266:  .byte   "8"                             ; E266 38                       8
-        .byte   $AE                             ; E267 AE                       .
-        .byte   "'"                             ; E268 27                       '
-        .byte   $C0,$BC,$0F,$C3                 ; E269 C0 BC 0F C3              ....
-        .byte   "0a"                            ; E26D 30 61                    0a
-        .byte   $98                             ; E26F 98                       .
-        .byte   "**"                            ; E270 2A 2A                    **
-        .byte   $10,$03                         ; E272 10 03                    ..
-        .byte   "L"                             ; E274 4C                       L
-        .byte   $F3,$E5                         ; E275 F3 E5                    ..
+        jmp     XPRSEC                          ; E261 4C 73 DA                 Ls.
+
 ; ----------------------------------------------------------------------------
-        jsr     LE5DC                           ; E277 20 DC E5                  ..
+LE264:  clc                                     ; E264 18                       .
+        .byte   $24                             ; E265 24                       $
+LE266:  sec                                     ; E266 38                       8
+        ldx     $C027                           ; E267 AE 27 C0                 .'.
+        ldy     SEDORIC_BUF3+15,x               ; E26A BC 0F C3                 ...
+        bmi     LE2D0                           ; E26D 30 61                    0a
+        tya                                     ; E26F 98                       .
+        rol     a                               ; E270 2A                       *
+        rol     a                               ; E271 2A                       *
+        bpl     LE277                           ; E272 10 03                    ..
+        jmp     LE5F3                           ; E274 4C F3 E5                 L..
+
+; ----------------------------------------------------------------------------
+LE277:  jsr     LE5DC                           ; E277 20 DC E5                  ..
         lda     SEDORIC_BUF3+12,x               ; E27A BD 0C C3                 ...
         pha                                     ; E27D 48                       H
         lda     SEDORIC_BUF3+13,x               ; E27E BD 0D C3                 ...
@@ -3654,7 +3652,7 @@ LE2CA:  jsr     XSMAP                           ; E2CA 20 8A DA                 
         jmp     XSCAT                           ; E2CD 4C 82 DA                 L..
 
 ; ----------------------------------------------------------------------------
-        bcs     LE2D5                           ; E2D0 B0 03                    ..
+LE2D0:  bcs     LE2D5                           ; E2D0 B0 03                    ..
 LE2D2:  jsr     LDAB4                           ; E2D2 20 B4 DA                  ..
 LE2D5:  ldx     #$09                            ; E2D5 A2 09                    ..
         jsr     LD36C                           ; E2D7 20 6C D3                  l.
@@ -4046,7 +4044,7 @@ LE5EF:  dec     SEDORIC_BUF2+4                  ; E5EF CE 04 C2                 
         rts                                     ; E5F2 60                       `
 
 ; ----------------------------------------------------------------------------
-        lda     #$C5                            ; E5F3 A9 C5                    ..
+LE5F3:  lda     #$C5                            ; E5F3 A9 C5                    ..
         ldy     #$E5                            ; E5F5 A0 E5                    ..
         jsr     XAFSTR                          ; E5F7 20 37 D6                  7.
         sec                                     ; E5FA 38                       8
