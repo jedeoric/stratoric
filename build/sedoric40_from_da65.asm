@@ -1,5 +1,5 @@
 ; da65 V2.15
-; Created:    2017-05-08 22:11:21
+; Created:    2017-05-09 21:55:00
 ; Input file: B7STRA40.rom
 ; Page:       1
 
@@ -81,7 +81,6 @@ SEDORIC_NOLIGN  := $04FE                        ; Line of Error
 L2020           := $2020
 L2310           := $2310
 L4C41           := $4C41
-L4D45           := $4D45
 L4F4E           := $4F4E
 L574F           := $574F
 L5B20           := $5B20
@@ -4828,7 +4827,7 @@ LEADA:  tya                                     ; EADA 98                       
         jsr     LD39E                           ; EAE3 20 9E D3                  ..
         bne     LEA9B                           ; EAE6 D0 B3                    ..
 LEAE8:  ldy     SEDORIC_TRAV2                   ; EAE8 A4 F4                    ..
-LEAEA:  lda     SEDORIC_TRAV3                   ; EAEA A5 F5                    ..
+        lda     SEDORIC_TRAV3                   ; EAEA A5 F5                    ..
         pha                                     ; EAEC 48                       H
         ldx     SEDORIC_TRAV4                   ; EAED A6 F6                    ..
         lda     SEDORIC_USER_COMMAND_1_VECTOR,x ; EAEF BD 66 C0                 .f.
@@ -4902,16 +4901,15 @@ LEB4E:  lda     #$3E                            ; EB4E A9 3E                    
 
 ; ----------------------------------------------------------------------------
         ora     $3F0A                           ; EB61 0D 0A 3F                 ..?
-        lsr     $544F                           ; EB64 4E 4F 54                 NOT
-        jsr     L4D45                           ; EB67 20 45 4D                  EM
-        bvc     LEBC0                           ; EB6A 50 54                    PT
-        eor     $4420,y                         ; EB6C 59 20 44                 Y D
-        eor     #$52                            ; EB6F 49 52                    IR
-        eor     $43                             ; EB71 45 43                    EC
-        .byte   $54                             ; EB73 54                       T
-        .byte   $4F                             ; EB74 4F                       O
-        .byte   $52                             ; EB75 52                       R
-        cmp     LEAEA,y                         ; EB76 D9 EA EA                 ...
+; X
+SEDORIC_STR_NOT_EMPTY_DIRECTORY:
+        .byte   "NOT EMPTY DIRECTOR"            ; EB64 4E 4F 54 20 45 4D 50 54  NOT EMPT
+                                                ; EB6C 59 20 44 49 52 45 43 54  Y DIRECT
+                                                ; EB74 4F 52                    OR
+        .byte   $D9                             ; EB76 D9                       .
+; ----------------------------------------------------------------------------
+        nop                                     ; EB77 EA                       .
+        nop                                     ; EB78 EA                       .
         nop                                     ; EB79 EA                       .
         nop                                     ; EB7A EA                       .
         nop                                     ; EB7B EA                       .
@@ -4962,8 +4960,8 @@ LEBB3:  lda     #$08                            ; EBB3 A9 08                    
         inx                                     ; EBBC E8                       .
         asl     a                               ; EBBD 0A                       .
         asl     a                               ; EBBE 0A                       .
-        .byte   $26                             ; EBBF 26                       &
-LEBC0:  sbc     $0A,x                           ; EBC0 F5 0A                    ..
+        rol     SEDORIC_TRAV3                   ; EBBF 26 F5                    &.
+        asl     a                               ; EBC1 0A                       .
         rol     SEDORIC_TRAV3                   ; EBC2 26 F5                    &.
         sta     SEDORIC_TRAV2                   ; EBC4 85 F4                    ..
         lda     SEDORIC_TRAV3                   ; EBC6 A5 F5                    ..
