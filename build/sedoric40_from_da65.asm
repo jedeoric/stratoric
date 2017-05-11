@@ -1,5 +1,5 @@
 ; da65 V2.15
-; Created:    2017-05-09 21:55:00
+; Created:    2017-05-11 22:08:44
 ; Input file: B7STRA40.rom
 ; Page:       1
 
@@ -7,6 +7,7 @@
         .setcpu "6502"
 
 ; ----------------------------------------------------------------------------
+L0000           := $0000
 BASIC11_INTERPRETER_VECTOR:= $00F0
 SEDORIC_TRAV0   := $00F2
 SEDORIC_TRAV1   := $00F3
@@ -21,6 +22,7 @@ BASIC11_KEYBOARD_MATRIX:= $0208                 ; For keyboard decoding
 BASIC11_PATTERN_ARG:= $020C
 BASIC11_LOWERCASE_UPPERCASE:= $0213
 BASIC11_MEMORY_SIZE:= $0220
+L0228           := $0228
 BASIC10_IRQ_VECTOR:= $0229                      ; Vecteur IRQ Oric -1
 BASIC10_IRQ2_VECTOR:= $022C                     ; Vecteur IRQ Oric -1
 BASIC11_KEYBOARD_GET_VECTOR:= $023C             ; Vecteur Prendre un caractère au clavier (EB78 ATMOS et 045B SEDORIC)
@@ -63,12 +65,17 @@ MICRODISC_FDC_DATA:= $0313
 MICRODISC_CONTROL:= $0314
 MICRODISC_DRQ   := $0318
 DO_EXEVEC       := $0453                        ; Exec code inside overlay
+L0467           := $0467
+L046B           := $046B
 L0471           := $0471
 DO_RAMROM       := $0477                        ; Switch from ROM to Overlay and vice-versa
+L0487           := $0487
 SED_IRQ         := $0488                        ; Replaces IRQ
 SED_COLDSTART   := $04A8                        ; Replaces COLDSTART
 DO_IRQRAM       := $04B3                        ; forwards IRQ/NMI from overlay to ROM
+L04B4           := $04B4
 L04D1           := $04D1
+L04E9           := $04E9
 SEDORIC_EXERAM  := $04EC
 SEDORIC_EXEVEC  := $04EF
 RAMROM          := $04F2
@@ -134,7 +141,7 @@ LC41B:  lda     #$5D                            ; C41B A9 5D                    
 LC421:  inc     BASIC11_HIMEM_MAX_ADRESS        ; C421 EE C1 02                 ...
         inc     BASIC11_HIMEM_MAX_ADRESS+1      ; C424 EE C2 02                 ...
         ldx     #$00                            ; C427 A2 00                    ..
-LC429:  lda     page4_oric1,x                   ; C429 BD 00 C6                 ...
+LC429:  lda     LC600,x                         ; C429 BD 00 C6                 ...
         bit     SEDORIC_ATMORI                  ; C42C 2C 24 C0                 ,$.
         bpl     LC434                           ; C42F 10 03                    ..
         lda     page4_atmos,x                   ; C431 BD 00 C7                 ...
@@ -226,7 +233,7 @@ LC4D7           := * + 2
         ldy     #$00                            ; C509 A0 00                    ..
         sta     SEDORIC_EXEVEC+1                ; C50B 8D F0 04                 ...
         sty     SEDORIC_EXEVEC+2                ; C50E 8C F1 04                 ...
-        lda     $00                             ; C511 A5 00                    ..
+        lda     L0000                           ; C511 A5 00                    ..
         beq     LC527                           ; C513 F0 12                    ..
         ldx     #$FF                            ; C515 A2 FF                    ..
 LC517:  inx                                     ; C517 E8                       .
@@ -326,41 +333,179 @@ SEDORIC_STR_LOAD_TARGET_DISC:
         .byte   $A0                             ; C5FE A0                       .
 ; ----------------------------------------------------------------------------
         .byte   $0D                             ; C5FF 0D                       .
-; Page4, ORIC-1
-page4_oric1:
-        .byte   $C9,$30,$90,$04,$C9,$3A,$90,$35 ; C600 C9 30 90 04 C9 3A 90 35  .0...:.5
-        .byte   $86,$0F,$AA,$30,$2E,$85,$C1,$68 ; C608 86 0F AA 30 2E 85 C1 68  ...0...h
-        .byte   $AA,$68,$48,$E0,$F7,$D0,$04,$C9 ; C610 AA 68 48 E0 F7 D0 04 C9  .hH.....
-        .byte   $C8,$F0,$09,$E0,$58,$D0,$18,$C9 ; C618 C8 F0 09 E0 58 D0 18 C9  ....X...
-        .byte   $CA,$D0,$14,$24,$18,$6E,$FC,$04 ; C620 CA D0 14 24 18 6E FC 04  ...$.n..
-        .byte   $A0,$FF,$C8,$B1,$E9,$F0,$11,$C9 ; C628 A0 FF C8 B1 E9 F0 11 C9  ........
-        .byte   $3A,$F0,$0D,$C9,$D4,$D0,$F3,$8A ; C630 3A F0 0D C9 D4 D0 F3 8A  :.......
-        .byte   $48,$A5,$C1,$A6,$0F,$4C,$41,$EA ; C638 48 A5 C1 A6 0F 4C 41 EA  H....LA.
-        .byte   $68,$20,$E9,$04                 ; C640 68 20 E9 04              h ..
-LC644:  .byte   $20,$67,$04,$0E,$FC,$04,$B0,$03 ; C644 20 67 04 0E FC 04 B0 03   g......
-        .byte   $4C,$AD,$C8,$EA,$EA,$EA,$60,$20 ; C64C 4C AD C8 EA EA EA 60 20  L.....` 
-        .byte   $77,$04,$B1,$16,$4C,$77,$04,$EA ; C654 77 04 B1 16 4C 77 04 EA  w...Lw..
-        .byte   $EA,$EA,$EA,$EA,$EA,$A9,$8E,$A0 ; C65C EA EA EA EA EA A9 8E A0  ........
-        .byte   $F8,$D0,$04,$A9,$AE,$A0,$D3,$8D ; C664 F8 D0 04 A9 AE A0 D3 8D  ........
-        .byte   $F0,$04,$8C,$F1,$04,$20,$77,$04 ; C66C F0 04 8C F1 04 20 77 04  ..... w.
-        .byte   $20,$EF,$04,$08,$48,$78,$AD,$FB ; C674 20 EF 04 08 48 78 AD FB   ...Hx..
-        .byte   $04,$49,$02,$8D,$FB,$04,$8D,$14 ; C67C 04 49 02 8D FB 04 8D 14  .I......
-        .byte   $03,$68,$28,$60,$2C,$0D,$03,$50 ; C684 03 68 28 60 2C 0D 03 50  .h(`,..P
-        .byte   $0F,$48,$A9,$04,$2D,$6A,$02,$F0 ; C68C 0F 48 A9 04 2D 6A 02 F0  .H..-j..
-        .byte   $03,$EE,$74,$02,$68,$4C,$03,$EC ; C694 03 EE 74 02 68 4C 03 EC  ..t.hL..
-        .byte   $68,$68,$85,$F2,$68,$AA,$A9,$36 ; C69C 68 68 85 F2 68 AA A9 36  hh..h..6
-        .byte   $A0,$D1,$D0,$C3,$20,$F2,$04,$68 ; C6A4 A0 D1 D0 C3 20 F2 04 68  .... ..h
-        .byte   $40,$8D,$14,$03,$6C,$FC,$FF,$18 ; C6AC 40 8D 14 03 6C FC FF 18  @...l...
-        .byte   $20,$77,$04,$48,$A9,$04,$48,$A9 ; C6B4 20 77 04 48 A9 04 48 A9   w.H..H.
-        .byte   $A8,$48,$08,$B0,$03,$4C,$28,$02 ; C6BC A8 48 08 B0 03 4C 28 02  .H...L(.
-        .byte   $20,$88,$F8,$A9,$17,$A0,$EC,$20 ; C6C4 20 88 F8 A9 17 A0 EC 20   ...... 
-        .byte   $6B,$04,$4C,$75,$C4,$A9,$04,$48 ; C6CC 6B 04 4C 75 C4 A9 04 48  k.Lu...H
-        .byte   $A9,$F1,$48,$8A,$48,$98,$48,$20 ; C6D4 A9 F1 48 8A 48 98 48 20  ..H.H.H 
-        .byte   $F2,$04,$4C,$70,$D2,$EA,$EA,$EA ; C6DC F2 04 4C 70 D2 EA EA EA  ..Lp....
-        .byte   $EA,$EA,$EA,$EA,$EA,$4C,$87,$04 ; C6E4 EA EA EA EA EA 4C 87 04  .....L..
-        .byte   $4C,$71,$04,$4C,$00,$00,$4C,$77 ; C6EC 4C 71 04 4C 00 00 4C 77  Lq.L..Lw
-        .byte   $04,$4C,$B3,$04,$4C,$B4,$04,$84 ; C6F4 04 4C B3 04 4C B4 04 84  .L..L...
-        .byte   $00,$00,$00,$00                 ; C6FC 00 00 00 00              ....
+LC600:  cmp     #$30                            ; C600 C9 30                    .0
+        bcc     LC608                           ; C602 90 04                    ..
+        cmp     #$3A                            ; C604 C9 3A                    .:
+        bcc     LC63D                           ; C606 90 35                    .5
+LC608:  stx     $0F                             ; C608 86 0F                    ..
+        tax                                     ; C60A AA                       .
+        bmi     LC63B                           ; C60B 30 2E                    0.
+        sta     $C1                             ; C60D 85 C1                    ..
+        pla                                     ; C60F 68                       h
+        tax                                     ; C610 AA                       .
+        pla                                     ; C611 68                       h
+        pha                                     ; C612 48                       H
+        cpx     #$F7                            ; C613 E0 F7                    ..
+        bne     LC61B                           ; C615 D0 04                    ..
+        cmp     #$C8                            ; C617 C9 C8                    ..
+        beq     LC624                           ; C619 F0 09                    ..
+LC61B:  cpx     #$58                            ; C61B E0 58                    .X
+        bne     LC637                           ; C61D D0 18                    ..
+        cmp     #$CA                            ; C61F C9 CA                    ..
+        bne     LC637                           ; C621 D0 14                    ..
+        .byte   $24                             ; C623 24                       $
+LC624:  clc                                     ; C624 18                       .
+        ror     SEDORIC_FLAGIF                  ; C625 6E FC 04                 n..
+        ldy     #$FF                            ; C628 A0 FF                    ..
+LC62A:  iny                                     ; C62A C8                       .
+        lda     ($E9),y                         ; C62B B1 E9                    ..
+        beq     LC640                           ; C62D F0 11                    ..
+        cmp     #$3A                            ; C62F C9 3A                    .:
+        beq     LC640                           ; C631 F0 0D                    ..
+        cmp     #$D4                            ; C633 C9 D4                    ..
+        bne     LC62A                           ; C635 D0 F3                    ..
+LC637:  txa                                     ; C637 8A                       .
+        pha                                     ; C638 48                       H
+        lda     $C1                             ; C639 A5 C1                    ..
+LC63B:  ldx     $0F                             ; C63B A6 0F                    ..
+LC63D:  jmp     LEA41                           ; C63D 4C 41 EA                 LA.
+
+; ----------------------------------------------------------------------------
+LC640:  pla                                     ; C640 68                       h
+        jsr     L04E9                           ; C641 20 E9 04                  ..
+LC644:  jsr     L0467                           ; C644 20 67 04                  g.
+        asl     SEDORIC_FLAGIF                  ; C647 0E FC 04                 ...
+        bcs     LC64F                           ; C64A B0 03                    ..
+        jmp     LC8AD                           ; C64C 4C AD C8                 L..
+
+; ----------------------------------------------------------------------------
+LC64F:  nop                                     ; C64F EA                       .
+        nop                                     ; C650 EA                       .
+        nop                                     ; C651 EA                       .
+        rts                                     ; C652 60                       `
+
+; ----------------------------------------------------------------------------
+        jsr     DO_RAMROM                       ; C653 20 77 04                  w.
+        lda     ($16),y                         ; C656 B1 16                    ..
+        jmp     DO_RAMROM                       ; C658 4C 77 04                 Lw.
+
+; ----------------------------------------------------------------------------
+        nop                                     ; C65B EA                       .
+        nop                                     ; C65C EA                       .
+        nop                                     ; C65D EA                       .
+        nop                                     ; C65E EA                       .
+        nop                                     ; C65F EA                       .
+        nop                                     ; C660 EA                       .
+        lda     #$8E                            ; C661 A9 8E                    ..
+        ldy     #$F8                            ; C663 A0 F8                    ..
+        bne     LC66B                           ; C665 D0 04                    ..
+        lda     #$AE                            ; C667 A9 AE                    ..
+        ldy     #$D3                            ; C669 A0 D3                    ..
+LC66B:  sta     SEDORIC_EXEVEC+1                ; C66B 8D F0 04                 ...
+        sty     SEDORIC_EXEVEC+2                ; C66E 8C F1 04                 ...
+        jsr     DO_RAMROM                       ; C671 20 77 04                  w.
+        jsr     SEDORIC_EXEVEC                  ; C674 20 EF 04                  ..
+        php                                     ; C677 08                       .
+        pha                                     ; C678 48                       H
+        sei                                     ; C679 78                       x
+        lda     MICRODISC_CONTROL_SHADOW        ; C67A AD FB 04                 ...
+        eor     #$02                            ; C67D 49 02                    I.
+        sta     MICRODISC_CONTROL_SHADOW        ; C67F 8D FB 04                 ...
+        sta     MICRODISC_CONTROL               ; C682 8D 14 03                 ...
+        pla                                     ; C685 68                       h
+        plp                                     ; C686 28                       (
+        rts                                     ; C687 60                       `
+
+; ----------------------------------------------------------------------------
+        bit     V1IFR                           ; C688 2C 0D 03                 ,..
+        bvc     LC69C                           ; C68B 50 0F                    P.
+        pha                                     ; C68D 48                       H
+        lda     #$04                            ; C68E A9 04                    ..
+        and     BASIC11_FLG                     ; C690 2D 6A 02                 -j.
+        beq     LC698                           ; C693 F0 03                    ..
+        inc     BASIC11_BLINK_CURSOR            ; C695 EE 74 02                 .t.
+LC698:  pla                                     ; C698 68                       h
+        jmp     LEC03                           ; C699 4C 03 EC                 L..
+
+; ----------------------------------------------------------------------------
+LC69C:  pla                                     ; C69C 68                       h
+        pla                                     ; C69D 68                       h
+        sta     SEDORIC_TRAV0                   ; C69E 85 F2                    ..
+        pla                                     ; C6A0 68                       h
+        tax                                     ; C6A1 AA                       .
+        lda     #$36                            ; C6A2 A9 36                    .6
+        ldy     #$D1                            ; C6A4 A0 D1                    ..
+        bne     LC66B                           ; C6A6 D0 C3                    ..
+        jsr     RAMROM                          ; C6A8 20 F2 04                  ..
+        pla                                     ; C6AB 68                       h
+        rti                                     ; C6AC 40                       @
+
+; ----------------------------------------------------------------------------
+        sta     MICRODISC_CONTROL               ; C6AD 8D 14 03                 ...
+        jmp     (RESET_VECTOR)                  ; C6B0 6C FC FF                 l..
+
+; ----------------------------------------------------------------------------
+        clc                                     ; C6B3 18                       .
+        jsr     DO_RAMROM                       ; C6B4 20 77 04                  w.
+        pha                                     ; C6B7 48                       H
+        lda     #$04                            ; C6B8 A9 04                    ..
+        pha                                     ; C6BA 48                       H
+        lda     #$A8                            ; C6BB A9 A8                    ..
+        pha                                     ; C6BD 48                       H
+        php                                     ; C6BE 08                       .
+        bcs     LC6C4                           ; C6BF B0 03                    ..
+        jmp     L0228                           ; C6C1 4C 28 02                 L(.
+
+; ----------------------------------------------------------------------------
+LC6C4:  jsr     LF888                           ; C6C4 20 88 F8                  ..
+        lda     #$17                            ; C6C7 A9 17                    ..
+        ldy     #$EC                            ; C6C9 A0 EC                    ..
+        jsr     L046B                           ; C6CB 20 6B 04                  k.
+        jmp     LC475                           ; C6CE 4C 75 C4                 Lu.
+
+; ----------------------------------------------------------------------------
+        lda     #$04                            ; C6D1 A9 04                    ..
+        pha                                     ; C6D3 48                       H
+        lda     #$F1                            ; C6D4 A9 F1                    ..
+        pha                                     ; C6D6 48                       H
+        txa                                     ; C6D7 8A                       .
+        pha                                     ; C6D8 48                       H
+        tya                                     ; C6D9 98                       .
+        pha                                     ; C6DA 48                       H
+        jsr     RAMROM                          ; C6DB 20 F2 04                  ..
+        jmp     LD270                           ; C6DE 4C 70 D2                 Lp.
+
+; ----------------------------------------------------------------------------
+        nop                                     ; C6E1 EA                       .
+        nop                                     ; C6E2 EA                       .
+        nop                                     ; C6E3 EA                       .
+        nop                                     ; C6E4 EA                       .
+        nop                                     ; C6E5 EA                       .
+        nop                                     ; C6E6 EA                       .
+        nop                                     ; C6E7 EA                       .
+        nop                                     ; C6E8 EA                       .
+        jmp     L0487                           ; C6E9 4C 87 04                 L..
+
+; ----------------------------------------------------------------------------
+        jmp     L0471                           ; C6EC 4C 71 04                 Lq.
+
+; ----------------------------------------------------------------------------
+        jmp     L0000                           ; C6EF 4C 00 00                 L..
+
+; ----------------------------------------------------------------------------
+        jmp     DO_RAMROM                       ; C6F2 4C 77 04                 Lw.
+
+; ----------------------------------------------------------------------------
+        jmp     DO_IRQRAM                       ; C6F5 4C B3 04                 L..
+
+; ----------------------------------------------------------------------------
+        jmp     L04B4                           ; C6F8 4C B4 04                 L..
+
+; ----------------------------------------------------------------------------
+        sty     L0000                           ; C6FB 84 00                    ..
+        brk                                     ; C6FD 00                       .
+        brk                                     ; C6FE 00                       .
+        brk                                     ; C6FF 00                       .
 ; Page4, Atmos
 page4_atmos:
         .byte   $C9,$30,$90,$04,$C9,$3A,$90,$35 ; C700 C9 30 90 04 C9 3A 90 35  .0...:.5
@@ -418,33 +563,34 @@ REDEF:  .byte   $20,$20,$20,$20,$20,$20,$20,$20 ; C880 20 20 20 20 20 20 20 20
         .byte   $20,$20,$20,$20,$20,$20,$44,$4F ; C890 20 20 20 20 20 20 44 4F        DO
         .byte   $4B,$45,$23,$32,$46,$35,$2C,$A3 ; C898 4B 45 23 32 46 35 2C A3  KE#2F5,.
         .byte   $20,$20,$44,$4F,$4B,$45,$23,$32 ; C8A0 20 20 44 4F 4B 45 23 32    DOKE#2
-        .byte   $46,$35,$2C,$23,$34,$36,$37,$8D ; C8A8 46 35 2C 23 34 36 37 8D  F5,#467.
-        .byte   $20,$20,$20,$20,$20,$20,$44,$4F ; C8B0 20 20 20 20 20 20 44 4F        DO
-        .byte   $4B,$45,$23,$32,$46,$39,$2C,$A3 ; C8B8 4B 45 23 32 46 39 2C A3  KE#2F9,.
-        .byte   $20,$44,$4F,$4B,$45,$23,$32,$46 ; C8C0 20 44 4F 4B 45 23 32 46   DOKE#2F
-        .byte   $39,$2C,$23,$44,$30,$37,$30,$8D ; C8C8 39 2C 23 44 30 37 30 8D  9,#D070.
-        .byte   $20,$20,$20,$20,$20,$20,$44,$4F ; C8D0 20 20 20 20 20 20 44 4F        DO
-        .byte   $4B,$45,$23,$32,$46,$43,$2C,$A3 ; C8D8 4B 45 23 32 46 43 2C A3  KE#2FC,.
-        .byte   $20,$20,$44,$4F,$4B,$45,$23,$32 ; C8E0 20 20 44 4F 4B 45 23 32    DOKE#2
-        .byte   $46,$43,$2C,$23,$34,$36,$31,$8D ; C8E8 46 43 2C 23 34 36 31 8D  FC,#461.
-        .byte   $20,$20,$20,$20,$50,$41,$50,$45 ; C8F0 20 20 20 20 50 41 50 45      PAPE
-        .byte   $52,$30,$3A,$49,$4E,$4B,$37,$8D ; C8F8 52 30 3A 49 4E 4B 37 8D  R0:INK7.
-        .byte   $20,$20,$20,$20,$20,$20,$43,$41 ; C900 20 20 20 20 20 20 43 41        CA
-        .byte   $4C,$4C,$23,$46,$38,$44,$30,$8D ; C908 4C 4C 23 46 38 44 30 8D  LL#F8D0.
-        .byte   $20,$20,$20,$20,$20,$20,$20,$20 ; C910 20 20 20 20 20 20 20 20          
-        .byte   $20,$20,$20,$20,$20,$20,$20,$FE ; C918 20 20 20 20 20 20 20 FE         .
-        .byte   $20,$20,$20,$20,$3F,$48,$45,$58 ; C920 20 20 20 20 3F 48 45 58      ?HEX
-        .byte   $24,$28,$50,$45,$45,$4B,$28,$A3 ; C928 24 28 50 45 45 4B 28 A3  $(PEEK(.
-        .byte   $20,$20,$20,$20,$3F,$48,$45,$58 ; C930 20 20 20 20 3F 48 45 58      ?HEX
-        .byte   $24,$28,$44,$45,$45,$4B,$28,$A3 ; C938 24 28 44 45 45 4B 28 A3  $(DEEK(.
-        .byte   $20,$20,$20,$20,$20,$20,$20,$20 ; C940 20 20 20 20 20 20 20 20          
-        .byte   $20,$20,$50,$45,$45,$4B,$28,$A3 ; C948 20 20 50 45 45 4B 28 A3    PEEK(.
-        .byte   $20,$20,$20,$20,$20,$20,$20,$20 ; C950 20 20 20 20 20 20 20 20          
-        .byte   $20,$20,$44,$45,$45,$4B,$28,$A3 ; C958 20 20 44 45 45 4B 28 A3    DEEK(.
-        .byte   $20,$20,$20,$20,$20,$20,$20,$20 ; C960 20 20 20 20 20 20 20 20          
-        .byte   $20,$20,$20,$50,$4F,$4B,$45,$A3 ; C968 20 20 20 50 4F 4B 45 A3     POKE.
-        .byte   $20,$20,$20,$20,$20,$20,$20,$20 ; C970 20 20 20 20 20 20 20 20          
-        .byte   $20,$20,$20,$44,$4F,$4B,$45,$A3 ; C978 20 20 20 44 4F 4B 45 A3     DOKE.
+        .byte   $46,$35,$2C,$23,$34             ; C8A8 46 35 2C 23 34           F5,#4
+LC8AD:  .byte   $36,$37,$8D,$20,$20,$20,$20,$20 ; C8AD 36 37 8D 20 20 20 20 20  67.     
+        .byte   $20,$44,$4F,$4B,$45,$23,$32,$46 ; C8B5 20 44 4F 4B 45 23 32 46   DOKE#2F
+        .byte   $39,$2C,$A3,$20,$44,$4F,$4B,$45 ; C8BD 39 2C A3 20 44 4F 4B 45  9,. DOKE
+        .byte   $23,$32,$46,$39,$2C,$23,$44,$30 ; C8C5 23 32 46 39 2C 23 44 30  #2F9,#D0
+        .byte   $37,$30,$8D,$20,$20,$20,$20,$20 ; C8CD 37 30 8D 20 20 20 20 20  70.     
+        .byte   $20,$44,$4F,$4B,$45,$23,$32,$46 ; C8D5 20 44 4F 4B 45 23 32 46   DOKE#2F
+        .byte   $43,$2C,$A3,$20,$20,$44,$4F,$4B ; C8DD 43 2C A3 20 20 44 4F 4B  C,.  DOK
+        .byte   $45,$23,$32,$46,$43,$2C,$23,$34 ; C8E5 45 23 32 46 43 2C 23 34  E#2FC,#4
+        .byte   $36,$31,$8D,$20,$20,$20,$20,$50 ; C8ED 36 31 8D 20 20 20 20 50  61.    P
+        .byte   $41,$50,$45,$52,$30,$3A,$49,$4E ; C8F5 41 50 45 52 30 3A 49 4E  APER0:IN
+        .byte   $4B,$37,$8D,$20,$20,$20,$20,$20 ; C8FD 4B 37 8D 20 20 20 20 20  K7.     
+        .byte   $20,$43,$41,$4C,$4C,$23,$46,$38 ; C905 20 43 41 4C 4C 23 46 38   CALL#F8
+        .byte   $44,$30,$8D,$20,$20,$20,$20,$20 ; C90D 44 30 8D 20 20 20 20 20  D0.     
+        .byte   $20,$20,$20,$20,$20,$20,$20,$20 ; C915 20 20 20 20 20 20 20 20          
+        .byte   $20,$20,$FE,$20,$20,$20,$20,$3F ; C91D 20 20 FE 20 20 20 20 3F    .    ?
+        .byte   $48,$45,$58,$24,$28,$50,$45,$45 ; C925 48 45 58 24 28 50 45 45  HEX$(PEE
+        .byte   $4B,$28,$A3,$20,$20,$20,$20,$3F ; C92D 4B 28 A3 20 20 20 20 3F  K(.    ?
+        .byte   $48,$45,$58,$24,$28,$44,$45,$45 ; C935 48 45 58 24 28 44 45 45  HEX$(DEE
+        .byte   $4B,$28,$A3,$20,$20,$20,$20,$20 ; C93D 4B 28 A3 20 20 20 20 20  K(.     
+        .byte   $20,$20,$20,$20,$20,$50,$45,$45 ; C945 20 20 20 20 20 50 45 45       PEE
+        .byte   $4B,$28,$A3,$20,$20,$20,$20,$20 ; C94D 4B 28 A3 20 20 20 20 20  K(.     
+        .byte   $20,$20,$20,$20,$20,$44,$45,$45 ; C955 20 20 20 20 20 44 45 45       DEE
+        .byte   $4B,$28,$A3,$20,$20,$20,$20,$20 ; C95D 4B 28 A3 20 20 20 20 20  K(.     
+        .byte   $20,$20,$20,$20,$20,$20,$50,$4F ; C965 20 20 20 20 20 20 50 4F        PO
+        .byte   $4B,$45,$A3,$20,$20,$20,$20,$20 ; C96D 4B 45 A3 20 20 20 20 20  KE.     
+        .byte   $20,$20,$20,$20,$20,$20,$44,$4F ; C975 20 20 20 20 20 20 44 4F        DO
+        .byte   $4B,$45,$A3                     ; C97D 4B 45 A3                 KE.
 ; Key shortcut table
 PREDEF: .byte   $48,$45,$58,$24,$A8,$43,$41,$4C ; C980 48 45 58 24 A8 43 41 4C  HEX$.CAL
         .byte   $4C,$A3,$54,$45,$58,$54,$8D,$46 ; C988 4C A3 54 45 58 54 8D 46  L.TEXT.F
@@ -1415,7 +1561,7 @@ LD264:  jsr     SEDORIC_XROM                    ; D264 20 D8 D5                 
         cmp     $60,x                           ; D26A D5 60                    .`
         jsr     SEDORIC_XROM                    ; D26C 20 D8 D5                  ..
         .byte   $C7                             ; D26F C7                       .
-        dec     $82,x                           ; D270 D6 82                    ..
+LD270:  dec     $82,x                           ; D270 D6 82                    ..
         .byte   $D7                             ; D272 D7                       .
         rts                                     ; D273 60                       `
 
@@ -4731,8 +4877,8 @@ LEA3A:  .byte   $D7                             ; EA3A D7                       
 CMD_SWAP:
         jsr     LD238                           ; EA3B 20 38 D2                  8.
         sta     $B8                             ; EA3E 85 B8                    ..
-        sty     $B9                             ; EA40 84 B9                    ..
-        lda     $28                             ; EA42 A5 28                    .(
+        .byte   $84                             ; EA40 84                       .
+LEA41:  lda     $28A5,y                         ; EA41 B9 A5 28                 ..(
         pha                                     ; EA44 48                       H
         lda     $29                             ; EA45 A5 29                    .)
 LEA47:  pha                                     ; EA47 48                       H
@@ -4836,7 +4982,7 @@ LEAE8:  ldy     SEDORIC_TRAV2                   ; EAE8 A4 F4                    
         sta     SEDORIC_EXEVEC+2                ; EAF8 8D F1 04                 ...
         lda     SEDORIC_TRAV0                   ; EAFB A5 F2                    ..
         ldx     SEDORIC_TRAV1                   ; EAFD A6 F3                    ..
-        bit     $00                             ; EAFF 24 00                    $.
+        bit     L0000                           ; EAFF 24 00                    $.
         brk                                     ; EB01 00                       .
         .byte   $07                             ; EB02 07                       .
         plp                                     ; EB03 28                       (
@@ -6229,7 +6375,7 @@ LF4A8:  lda     #$88                            ; F4A8 A9 88                    
         adc     #$08                            ; F4B6 69 08                    i.
         tay                                     ; F4B8 A8                       .
         jsr     LF3D8                           ; F4B9 20 D8 F3                  ..
-        sta     $00                             ; F4BC 85 00                    ..
+        sta     L0000                           ; F4BC 85 00                    ..
         clc                                     ; F4BE 18                       .
         adc     #$17                            ; F4BF 69 17                    i.
         sta     $02                             ; F4C1 85 02                    ..
@@ -6241,10 +6387,10 @@ LF4A8:  lda     #$88                            ; F4A8 A9 88                    
         adc     #$01                            ; F4CC 69 01                    i.
         sta     $05                             ; F4CE 85 05                    ..
         iny                                     ; F4D0 C8                       .
-        lda     ($00),y                         ; F4D1 B1 00                    ..
+        lda     (L0000),y                       ; F4D1 B1 00                    ..
         sta     $C083                           ; F4D3 8D 83 C0                 ...
         dey                                     ; F4D6 88                       .
-        lda     ($00),y                         ; F4D7 B1 00                    ..
+        lda     (L0000),y                       ; F4D7 B1 00                    ..
         sta     $0B                             ; F4D9 85 0B                    ..
         rts                                     ; F4DB 60                       `
 
@@ -6612,7 +6758,7 @@ LF75A:  sta     $C058                           ; F75A 8D 58 C0                 
         jsr     XPMAP                           ; F765 20 4C DA                  L.
         jsr     LF4A8                           ; F768 20 A8 F4                  ..
         ldy     #$02                            ; F76B A0 02                    ..
-        lda     ($00),y                         ; F76D B1 00                    ..
+        lda     (L0000),y                       ; F76D B1 00                    ..
         beq     LF785                           ; F76F F0 14                    ..
         clc                                     ; F771 18                       .
         adc     $05                             ; F772 65 05                    e.
@@ -6627,10 +6773,10 @@ LF75A:  sta     $C058                           ; F75A 8D 58 C0                 
         inc     $05                             ; F781 E6 05                    ..
         bne     LF78F                           ; F783 D0 0A                    ..
 LF785:  ldy     #$13                            ; F785 A0 13                    ..
-        lda     ($00),y                         ; F787 B1 00                    ..
+        lda     (L0000),y                       ; F787 B1 00                    ..
         tax                                     ; F789 AA                       .
         iny                                     ; F78A C8                       .
-        lda     ($00),y                         ; F78B B1 00                    ..
+        lda     (L0000),y                       ; F78B B1 00                    ..
         ldy     #$0C                            ; F78D A0 0C                    ..
 LF78F:  stx     SEDORIC_TRACK                   ; F78F 8E 01 C0                 ...
         sta     SEDORIC_SECTOR                  ; F792 8D 02 C0                 ...
@@ -6686,7 +6832,7 @@ LF7F9:  sta     ($04),y                         ; F7F9 91 04                    
         bne     LF7A3                           ; F800 D0 A1                    ..
 LF802:  jsr     XSVSEC                          ; F802 20 A4 DA                  ..
         ldy     #$06                            ; F805 A0 06                    ..
-LF807:  lda     ($00),y                         ; F807 B1 00                    ..
+LF807:  lda     (L0000),y                       ; F807 B1 00                    ..
         sta     $C022,y                         ; F809 99 22 C0                 .".
         iny                                     ; F80C C8                       .
         cpy     #$17                            ; F80D C0 17                    ..
@@ -6701,10 +6847,10 @@ LF819:  jsr     LDAEE                           ; F819 20 EE DA                 
         jsr     XSCAT                           ; F81F 20 82 DA                  ..
         jsr     LF4A8                           ; F822 20 A8 F4                  ..
         ldy     #$13                            ; F825 A0 13                    ..
-        lda     ($00),y                         ; F827 B1 00                    ..
+        lda     (L0000),y                       ; F827 B1 00                    ..
         sta     SEDORIC_TRACK                   ; F829 8D 01 C0                 ...
         iny                                     ; F82C C8                       .
-        lda     ($00),y                         ; F82D B1 00                    ..
+        lda     (L0000),y                       ; F82D B1 00                    ..
         sta     SEDORIC_SECTOR                  ; F82F 8D 02 C0                 ...
         jsr     LF85F                           ; F832 20 5F F8                  _.
         jmp     XSVSEC                          ; F835 4C A4 DA                 L..
@@ -6722,14 +6868,14 @@ LF838:  ldy     #$0A                            ; F838 A0 0A                    
         sta     ($02),y                         ; F848 91 02                    ..
         dec     $03                             ; F84A C6 03                    ..
 LF84C:  ldy     #$15                            ; F84C A0 15                    ..
-        lda     ($00),y                         ; F84E B1 00                    ..
+        lda     (L0000),y                       ; F84E B1 00                    ..
         clc                                     ; F850 18                       .
         adc     #$01                            ; F851 69 01                    i.
-        sta     ($00),y                         ; F853 91 00                    ..
+        sta     (L0000),y                       ; F853 91 00                    ..
         iny                                     ; F855 C8                       .
-        lda     ($00),y                         ; F856 B1 00                    ..
+        lda     (L0000),y                       ; F856 B1 00                    ..
         adc     #$00                            ; F858 69 00                    i.
-        sta     ($00),y                         ; F85A 91 00                    ..
+        sta     (L0000),y                       ; F85A 91 00                    ..
         jmp     XLIBSE                          ; F85C 4C 6C DC                 Ll.
 
 ; ----------------------------------------------------------------------------
@@ -6743,9 +6889,9 @@ LF85F:  lda     $04                             ; F85F A5 04                    
 LF86A:  inc     $05                             ; F86A E6 05                    ..
         clc                                     ; F86C 18                       .
         ldy     #$02                            ; F86D A0 02                    ..
-        lda     ($00),y                         ; F86F B1 00                    ..
+        lda     (L0000),y                       ; F86F B1 00                    ..
         adc     #$01                            ; F871 69 01                    i.
-        sta     ($00),y                         ; F873 91 00                    ..
+        sta     (L0000),y                       ; F873 91 00                    ..
         lda     $04                             ; F875 A5 04                    ..
         ldy     $05                             ; F877 A4 05                    ..
         jsr     LF885                           ; F879 20 85 F8                  ..
@@ -6757,7 +6903,7 @@ LF86A:  inc     $05                             ; F86A E6 05                    
 ; ----------------------------------------------------------------------------
 LF885:  sec                                     ; F885 38                       8
         sbc     $9E                             ; F886 E5 9E                    ..
-        tax                                     ; F888 AA                       .
+LF888:  tax                                     ; F888 AA                       .
         tya                                     ; F889 98                       .
         sbc     $9F                             ; F88A E5 9F                    ..
         tay                                     ; F88C A8                       .
@@ -6876,10 +7022,10 @@ LF93B:  ldy     #$04                            ; F93B A0 04                    
         sta     ($04),y                         ; F944 91 04                    ..
         jsr     LF85F                           ; F946 20 5F F8                  _.
         ldy     #$13                            ; F949 A0 13                    ..
-        lda     ($00),y                         ; F94B B1 00                    ..
+        lda     (L0000),y                       ; F94B B1 00                    ..
         pha                                     ; F94D 48                       H
         iny                                     ; F94E C8                       .
-        lda     ($00),y                         ; F94F B1 00                    ..
+        lda     (L0000),y                       ; F94F B1 00                    ..
         tay                                     ; F951 A8                       .
         pla                                     ; F952 68                       h
         jmp     LDA9E                           ; F953 4C 9E DA                 L..
@@ -6890,7 +7036,7 @@ LF93B:  ldy     #$04                            ; F93B A0 04                    
         jsr     LF4A8                           ; F95C 20 A8 F4                  ..
         pha                                     ; F95F 48                       H
         ldy     #$06                            ; F960 A0 06                    ..
-        lda     ($00),y                         ; F962 B1 00                    ..
+        lda     (L0000),y                       ; F962 B1 00                    ..
         sta     SEDORIC_DRIVE                   ; F964 8D 00 C0                 ...
         pla                                     ; F967 68                       h
         cmp     #$01                            ; F968 C9 01                    ..
@@ -7036,7 +7182,7 @@ LFA6D:  lda     #$00                            ; FA6D A9 00                    
         jsr     LFACB                           ; FA71 20 CB FA                  ..
 LFA74:  ldy     #$06                            ; FA74 A0 06                    ..
         lda     SEDORIC_DRIVE                   ; FA76 AD 00 C0                 ...
-        sta     ($00),y                         ; FA79 91 00                    ..
+        sta     (L0000),y                       ; FA79 91 00                    ..
 LFA7B:  rts                                     ; FA7B 60                       `
 
 ; ----------------------------------------------------------------------------
@@ -7061,12 +7207,12 @@ LFA92:  cmp     #$53                            ; FA92 C9 53                    
 LFA9D:  php                                     ; FA9D 08                       .
         ldy     #$03                            ; FA9E A0 03                    ..
         lda     #$0C                            ; FAA0 A9 0C                    ..
-        sta     ($00),y                         ; FAA2 91 00                    ..
+        sta     (L0000),y                       ; FAA2 91 00                    ..
         iny                                     ; FAA4 C8                       .
         lda     #$00                            ; FAA5 A9 00                    ..
-        sta     ($00),y                         ; FAA7 91 00                    ..
+        sta     (L0000),y                       ; FAA7 91 00                    ..
         iny                                     ; FAA9 C8                       .
-        sta     ($00),y                         ; FAAA 91 00                    ..
+        sta     (L0000),y                       ; FAAA 91 00                    ..
         plp                                     ; FAAC 28                       (
         bne     LFAB8                           ; FAAD D0 09                    ..
         ldy     #$00                            ; FAAF A0 00                    ..
@@ -7112,7 +7258,7 @@ LFACB:  .byte   "H"                             ; FACB 48                       
         .byte   "h"                             ; FAFA 68                       h
 ; ----------------------------------------------------------------------------
         iny                                     ; FAFB C8                       .
-        sta     ($00),y                         ; FAFC 91 00                    ..
+        sta     (L0000),y                       ; FAFC 91 00                    ..
         sta     $C083                           ; FAFE 8D 83 C0                 ...
         rts                                     ; FB01 60                       `
 
@@ -7159,14 +7305,14 @@ LFB40:  lda     SEDORIC_BUF3+12,x               ; FB40 BD 0C C3                 
         ldy     #$07                            ; FB58 A0 07                    ..
         ldx     $C027                           ; FB5A AE 27 C0                 .'.
 LFB5D:  lda     SEDORIC_BUF3,x                  ; FB5D BD 00 C3                 ...
-        sta     ($00),y                         ; FB60 91 00                    ..
+        sta     (L0000),y                       ; FB60 91 00                    ..
         inx                                     ; FB62 E8                       .
         iny                                     ; FB63 C8                       .
         cpy     #$17                            ; FB64 C0 17                    ..
         bne     LFB5D                           ; FB66 D0 F5                    ..
         lda     #$FF                            ; FB68 A9 FF                    ..
         ldy     #$02                            ; FB6A A0 02                    ..
-        sta     ($00),y                         ; FB6C 91 00                    ..
+        sta     (L0000),y                       ; FB6C 91 00                    ..
         dec     $05                             ; FB6E C6 05                    ..
 LFB70:  jsr     LF86A                           ; FB70 20 6A F8                  j.
         jsr     LF85F                           ; FB73 20 5F F8                  _.
@@ -7391,13 +7537,13 @@ LFD0D:  rts                                     ; FD0D 60                       
 ; ----------------------------------------------------------------------------
 LFD0E:  jsr     LF4A8                           ; FD0E 20 A8 F4                  ..
         ldy     #$03                            ; FD11 A0 03                    ..
-        lda     ($00),y                         ; FD13 B1 00                    ..
+        lda     (L0000),y                       ; FD13 B1 00                    ..
         sta     $C086                           ; FD15 8D 86 C0                 ...
         iny                                     ; FD18 C8                       .
-        lda     ($00),y                         ; FD19 B1 00                    ..
+        lda     (L0000),y                       ; FD19 B1 00                    ..
         sta     $C087                           ; FD1B 8D 87 C0                 ...
         iny                                     ; FD1E C8                       .
-        lda     ($00),y                         ; FD1F B1 00                    ..
+        lda     (L0000),y                       ; FD1F B1 00                    ..
         sta     $C088                           ; FD21 8D 88 C0                 ...
         tay                                     ; FD24 A8                       .
         lda     ($02),y                         ; FD25 B1 02                    ..
@@ -7408,14 +7554,14 @@ LFD29:  rts                                     ; FD29 60                       
 LFD2A:  jsr     LF4A8                           ; FD2A 20 A8 F4                  ..
         ldy     #$05                            ; FD2D A0 05                    ..
         lda     $C088                           ; FD2F AD 88 C0                 ...
-        sta     ($00),y                         ; FD32 91 00                    ..
+        sta     (L0000),y                       ; FD32 91 00                    ..
         dey                                     ; FD34 88                       .
         lda     $C087                           ; FD35 AD 87 C0                 ...
-        sta     ($00),y                         ; FD38 91 00                    ..
+        sta     (L0000),y                       ; FD38 91 00                    ..
         dey                                     ; FD3A 88                       .
         lda     $C086                           ; FD3B AD 86 C0                 ...
-        cmp     ($00),y                         ; FD3E D1 00                    ..
-        sta     ($00),y                         ; FD40 91 00                    ..
+        cmp     (L0000),y                       ; FD3E D1 00                    ..
+        sta     (L0000),y                       ; FD40 91 00                    ..
         beq     LFD29                           ; FD42 F0 E5                    ..
 LFD44:  clc                                     ; FD44 18                       .
         .byte   $24                             ; FD45 24                       $
@@ -7427,12 +7573,12 @@ LFD46:  sec                                     ; FD46 38                       
         sta     SEDORIC_RWBUF                   ; FD4F 8D 03 C0                 ...
         sty     SEDORIC_RWBUF+1                 ; FD52 8C 04 C0                 ...
         ldy     #$04                            ; FD55 A0 04                    ..
-        lda     ($00),y                         ; FD57 B1 00                    ..
+        lda     (L0000),y                       ; FD57 B1 00                    ..
         clc                                     ; FD59 18                       .
         adc     $05                             ; FD5A 65 05                    e.
         sta     $05                             ; FD5C 85 05                    ..
         dey                                     ; FD5E 88                       .
-        lda     ($00),y                         ; FD5F B1 00                    ..
+        lda     (L0000),y                       ; FD5F B1 00                    ..
         tay                                     ; FD61 A8                       .
         lda     ($04),y                         ; FD62 B1 04                    ..
         pha                                     ; FD64 48                       H
@@ -7459,12 +7605,12 @@ LFD7A:  clc                                     ; FD7A 18                       
         bcc     LFDA4                           ; FD81 90 21                    .!
         jsr     LFD46                           ; FD83 20 46 FD                  F.
         ldy     #$02                            ; FD86 A0 02                    ..
-        lda     ($00),y                         ; FD88 B1 00                    ..
+        lda     (L0000),y                       ; FD88 B1 00                    ..
         ldy     #$04                            ; FD8A A0 04                    ..
-        cmp     ($00),y                         ; FD8C D1 00                    ..
+        cmp     (L0000),y                       ; FD8C D1 00                    ..
         bne     LFDA4                           ; FD8E D0 14                    ..
         dey                                     ; FD90 88                       .
-        lda     ($00),y                         ; FD91 B1 00                    ..
+        lda     (L0000),y                       ; FD91 B1 00                    ..
         tay                                     ; FD93 A8                       .
         iny                                     ; FD94 C8                       .
         iny                                     ; FD95 C8                       .
@@ -7477,22 +7623,22 @@ LFD9D:  lda     #$03                            ; FD9D A9 03                    
         jsr     LF75A                           ; FDA1 20 5A F7                  Z.
 LFDA4:  jsr     LF4A8                           ; FDA4 20 A8 F4                  ..
         ldy     #$03                            ; FDA7 A0 03                    ..
-        lda     ($00),y                         ; FDA9 B1 00                    ..
+        lda     (L0000),y                       ; FDA9 B1 00                    ..
         clc                                     ; FDAB 18                       .
         adc     #$02                            ; FDAC 69 02                    i.
         bne     LFDBA                           ; FDAE D0 0A                    ..
         ldy     #$04                            ; FDB0 A0 04                    ..
-        lda     ($00),y                         ; FDB2 B1 00                    ..
+        lda     (L0000),y                       ; FDB2 B1 00                    ..
         adc     #$00                            ; FDB4 69 00                    i.
-        sta     ($00),y                         ; FDB6 91 00                    ..
+        sta     (L0000),y                       ; FDB6 91 00                    ..
         lda     #$02                            ; FDB8 A9 02                    ..
 LFDBA:  ldy     #$03                            ; FDBA A0 03                    ..
-        sta     ($00),y                         ; FDBC 91 00                    ..
+        sta     (L0000),y                       ; FDBC 91 00                    ..
         jsr     LFD44                           ; FDBE 20 44 FD                  D.
         ldy     #$00                            ; FDC1 A0 00                    ..
 LFDC3:  tya                                     ; FDC3 98                       .
         ldy     #$05                            ; FDC4 A0 05                    ..
-        sta     ($00),y                         ; FDC6 91 00                    ..
+        sta     (L0000),y                       ; FDC6 91 00                    ..
         tay                                     ; FDC8 A8                       .
         lda     ($02),y                         ; FDC9 B1 02                    ..
         rts                                     ; FDCB 60                       `
@@ -7500,7 +7646,7 @@ LFDC3:  tya                                     ; FDC3 98                       
 ; ----------------------------------------------------------------------------
 LFDCC:  ldy     #$05                            ; FDCC A0 05                    ..
         pha                                     ; FDCE 48                       H
-        lda     ($00),y                         ; FDCF B1 00                    ..
+        lda     (L0000),y                       ; FDCF B1 00                    ..
         tay                                     ; FDD1 A8                       .
         pla                                     ; FDD2 68                       h
         rts                                     ; FDD3 60                       `

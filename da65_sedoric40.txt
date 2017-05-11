@@ -496,13 +496,13 @@ RANGE {
 
 
 # Ideally, those should be ORGed at $400...
-RANGE {
-	TYPE	BYTETABLE;
-	START	$c600;
-	NAME	"page4_oric1";
-	END	$c6ff;
-	COMMENT	"Page4, ORIC-1";
-};
+#RANGE {
+#	TYPE	BYTETABLE;
+	#START	$c600;
+	#NAME	"page4_oric1";
+	#END	$c6ff;
+	#COMMENT	"Page4, ORIC-1";
+#};
 
 RANGE {
 	TYPE	BYTETABLE;
