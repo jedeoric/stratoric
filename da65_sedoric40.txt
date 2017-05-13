@@ -552,12 +552,21 @@ RANGE {
 	COMMENT	"SEDORIC token initials table";
 };
 
+#RANGE {
+#	TYPE	ADDRTABLE;
+#	START	$cc27;
+	#NAME	"TOKEN_ADDR_TABLE";
+	#END	$ccf6;
+	#COMMENT	"SEDORIC token address table";
+#};
+
+
 RANGE {
-	TYPE	ADDRTABLE;
-	START	$cc27;
-	NAME	"TOKEN_ADDR_TABLE";
-	END	$ccf6;
-	COMMENT	"SEDORIC token address table";
+	TYPE	BYTETABLE;
+	START	$CC90;
+	NAME	"DUNNO";
+	END	$CC9f;
+	COMMENT	"common names and extentions";
 };
 
 RANGE {
@@ -1365,14 +1374,19 @@ LABEL {
 	ADDR	$f210;
 };
 
-
-RANGE {
-	TYPE	TEXTTABLE;
-	START	$FAC7;
-	NAME	"SEDORIC_COPYRIGHT";
-	END		$FAFA;
-	COMMENT	"Sedoric copyright";
+LABEL {
+	NAME	"CMD_AZERTY";
+	ADDR	$fe07;
 };
+
+
+#RANGE {
+	#TYPE	TEXTTABLE;
+	#START	$FAC7;
+	#NAME	"SEDORIC_COPYRIGHT";
+	#END		$FAFA;
+	#COMMENT	"Sedoric copyright";
+#};
 
 
 

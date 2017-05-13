@@ -1,4 +1,12 @@
 
+; Disassembled by jede
+; started in april 2017
+; continued in may 2017
+; with the help of Sedoric à Nu (André C.)
+; the goal is to have a real sedoric to modify easily
+
+; Adding a command : don't forget to inc the number of the command in initial table for the letter
+
 ; ----------------------------------------------------------------------------
 #define BASIC11_INTERPRETER_VECTOR   $00F0
 #define SEDORIC_TRAV0      $00F2
@@ -27,13 +35,9 @@
 #define SEDORIC_FLAGIF     $04FC                        ; b7 1 if inside IF
 #define SEDORIC_IDERROR    $04FD                        ; id of Error
 #define SEDORIC_NOLIGN     $04FE                        ; Line of Error
-#define SEDORIC_DRIVE      $C000
-#define SEDORIC_TRACK      $C001
-#define SEDORIC_SECTOR     $C002
-#define SEDORIC_RWBUF      $C003
-#define SEDORIC_TYPE_OF_ERROR   $C005                   ; b5 0 write fault if b5 1 read fault
-#define SEDORIC_XRWTS_RETRY   $C006                     ; XRWTS (nombre de tentatives possibles en cas de secteur non trouvé)
-#define SEDORIC_NUMBER_OF_RETRY   $C007
+
+
+
 #define SEDORIC_DRVDEF     $C009
 #define SEDORIC_DRVSYS     $C00A
 #define SEDORIC_ACTIVATE_DRIVE_AND_TRACK   $C00B        ; activation drive et piste  contains $00 $0b
@@ -58,6 +62,28 @@
 
 		
 #define SEDORIC_VECTORS_IO $0400
+
+.bss
+*=$c000
+SEDORIC_DRIVE ; $c000
+	.dsb 1
+SEDORIC_TRACK ;c001
+	.dsb 1
+SEDORIC_SECTOR ; c002
+	.dsb 1
+SEDORIC_RWBUF  ; $c003
+    .dsb 2
+SEDORIC_TYPE_OF_ERROR ;$c005
+    .dsb 1
+SEDORIC_XRWTS_RETRY      ; $c006                ; XRWTS (nombre de tentatives possibles en cas de secteur non trouvé)
+   .dsb 1
+SEDORIC_NUMBER_OF_RETRY  ;$c007
+   .dsb 1
+	
+.zero
+*=$e9
+BASIC11_TXTPTR ; ptr text
+	.dsb 2
 
 .data
 *=$c100
@@ -258,26 +284,42 @@ LC566:  sta     SEDORIC_EXEVEC+1                ; C566 8D F0 04                 
 
 */
 MSG_DOS_ALTERED		
-        .byt   $0A,$8C,$81                     ; C574 0A 8C 81                 ...
+        .byt   $0A,$8C,$81                     ; C574 0A 8C 81                 blink, ink red
+LC589		
         .asc   "** WARNING **",$88,$87,"DOS is altered !"                 ; C589 20 69 73 20 61 6C 74 65   is alte
-        .byt   $0D,$0A,$00                     ; C596 0D 0A 00                 ...
+        .byt   $0D,$0A,$00                     ; C596 0D 0A 00                 CRLF and end of string
 
-		
-		
-		.byt 	$4C,$64,$D3,$60,$AD,$AE,$C5 ; C198 00 4C 64 D3 60 AD AE C5  .Ld.`...
-        .byte   $AE,$AF,$C5,$8D,$01,$C0,$8E,$02 ; C1A0 AE AF C5 8D 01 C0 8E 02  ........
-        .byte   $C0,$AD,$B0,$C5,$D0,$DB,$27,$09 ; C1A8 C0 AD B0 C5 D0 DB 27 09  ......'.
-        .byte   $1A,$49,$4E,$20,$44,$52,$49,$56 ; C1B0 1A 49 4E 20 44 52 49 56  .IN DRIV
-        .byte   $45,$A0,$4C,$4F,$41,$44,$20,$44 ; C1B8 45 A0 4C 4F 41 44 20 44  E.LOAD D
-        .byte   $49,$53,$43,$53,$20,$46,$4F,$52 ; C1C0 49 53 43 53 20 46 4F 52  ISCS FOR
-        .byte   $20,$42,$41,$43,$4B,$55,$50,$20 ; C1C8 20 42 41 43 4B 55 50 20   BACKUP 
-        .byte   $46,$52,$4F,$4D,$A0,$20,$54,$4F ; C1D0 46 52 4F 4D A0 20 54 4F  FROM. TO
-        .byte   $A0,$0D,$0A,$4C,$4F,$41,$44,$20 ; C1D8 A0 0D 0A 4C 4F 41 44 20  ...LOAD 
-        .byte   $53,$4F,$55,$52,$43,$45,$20,$44 ; C1E0 53 4F 55 52 43 45 20 44  SOURCE D
-        .byte   $49,$53,$43,$A0,$0D,$0A,$4C,$4F ; C1E8 49 53 43 A0 0D 0A 4C 4F  ISC...LO
-        .byte   $41,$44,$20,$54,$41,$52,$47,$45 ; C1F0 41 44 20 54 41 52 47 45  AD TARGE
-        .byte   $54,$20,$44,$49,$53,$43,$A0,$0D ; C1F8 54 20 44 49 53 43 A0 0D  T DISC..
-		
+
+; This part is maybe never called as sedoric à nu said	FIXME Free memory	
+LC599
+		jmp XAFSC
+		rts
+		lda $c5ae
+		ldx $c5af
+		sta $c001
+		stx $c002
+		lda $c5b0
+		bne LC589+18 ; Not useful
+        .byte   $27,$09 ; C1A8 C0 AD B0 C5 D0 DB 27 09  ......'.
+        .byte   $1A
+; end of free memory and not used code
+
+
+; This bytes could be free but who knows ? As "Sedoric à nu" says, it might be used but in a bank
+SEDORIC_IN_DRIVE_STR
+        .byte   "IN DRIVE"                      ; C5B1 49 4E 20 44 52 49 56 45  IN DRIVE
+        .byte   $A0
+SEDORICLOAD_DISC_FOR_BACKUP_STR:
+        .asc   "LOAD DISCS FOR BACKUP "		
+        .asc   "FROM",$A0
+		.byt    " TO",$A0,$0D,$0A
+SEDORIC_STR_LOAD_SOURCE_DISC:
+        .byte   "LOAD SOURCE DISC"              ; C5DB 4C 4F 41 44 20 53 4F 55  LOAD SOU
+        .byte   $A0                             ; C5EB A0                       .		
+		.byt    $0D,$0A
+SEDORIC_STR_LOAD_TARGET_DISC:
+        .byte   "LOAD TARGET DISC"              ; C5EE 4C 4F 41 44 20 54 41 52  LOAD TAR
+        .byte   $A0,$0D ; C1F8 54 20 44 49 53 43 A0 0D  T DISC..
 		
 ; XXXXXXXXXXXXX		
 page4_oric1:
@@ -304,11 +346,18 @@ KEYDEF: .byte   $07,$45,$57,$4B,$00,$18,$07,$08 ; C800 07 45 57 4B 00 18 07 08  
         .byte   $A4,$9A,$12,$1C,$00,$1F,$CB,$00 ; C870 A4 9A 12 1C 00 1F CB 00  ........
         .byte   $13,$91,$ED,$00,$00,$1E,$B5,$1B ; C878 13 91 ED 00 00 1E B5 1B  ........
 
-
-
+/*
+ABLE "REDEF"
+16 commandes re-definissables avec KEYUSE (codes de fonction de 0 à 15)
+De C880 à C97F, la table REDEF des fonctions re-definissables a été complètement modifiée (les octets
+modifiés sont indiqués en gras dans le dump hexadécimal). Chaque chaîne se termine par un caractère +#80
+(indiqué en gras à la fin de chaque chaîne alphanumérique):
+C880-  20 20 20 20 
+20 20 20 20 20 20 20 20 20 20 20 
+*/
 		
-		
-		
+SEDORIC_REDEF		 ; FIXME
+LC880
         .byte   $20,$20,$20,$20,$20,$20,$20,$20 ; C480 20 20 20 20 20 20 20 20          
         .byte   $20,$20,$20,$20,$20,$20,$20,$A0 ; C488 20 20 20 20 20 20 20 A0         .
         .byte   $20,$20,$20,$20,$20,$20,$44,$4F ; C490 20 20 20 20 20 20 44 4F        DO
@@ -341,22 +390,61 @@ KEYDEF: .byte   $07,$45,$57,$4B,$00,$18,$07,$08 ; C800 07 45 57 4B 00 18 07 08  
         .byte   $20,$20,$20,$50,$4F,$4B,$45,$A3 ; C568 20 20 20 50 4F 4B 45 A3     POKE.
         .byte   $20,$20,$20,$20,$20,$20,$20,$20 ; C570 20 20 20 20 20 20 20 20          
         .byte   $20,$20,$20,$44,$4F,$4B,$45,$A3 ; C578 20 20 20 44 4F 4B 45 A3     DOKE.
-        .byte   $48,$45,$58,$24,$A8,$43,$41,$4C ; C580 48 45 58 24 A8 43 41 4C  HEX$.CAL
-        .byte   $4C,$A3,$54,$45,$58,$54,$8D,$46 ; C588 4C A3 54 45 58 54 8D 46  L.TEXT.F
-        .byte   $4F,$52,$49,$3D,$31,$54,$CF,$4C ; C590 4F 52 49 3D 31 54 CF 4C  ORI 1T.L
-        .byte   $45,$46,$54,$24,$A8,$4D,$49,$44 ; C598 45 46 54 24 A8 4D 49 44  EFT$.MID
-        .byte   $24,$A8,$52,$49,$47,$48,$54,$24 ; C5A0 24 A8 52 49 47 48 54 24  $.RIGHT$
-        .byte   $A8,$53,$54,$52,$24,$A8,$55,$4E ; C5A8 A8 53 54 52 24 A8 55 4E  .STR$.UN
-        .byte   $50,$52,$4F,$54,$8D,$E0,$55,$53 ; C5B0 50 52 4F 54 8D E0 55 53  PROT..US
-        .byte   $49,$4E,$C7,$56,$49,$53,$55,$48 ; C5B8 49 4E C7 56 49 53 55 48  IN.VISUH
-        .byte   $49,$52,$45,$53,$A2,$56,$55,$53 ; C5C0 49 52 45 53 A2 56 55 53  IRES.VUS
-        .byte   $45,$52,$8D,$57,$49,$44,$54,$C8 ; C5C8 45 52 8D 57 49 44 54 C8  ER.WIDT.
-        .byte   $57,$49,$4E,$44,$4F,$D7,$21,$52 ; C5D0 57 49 4E 44 4F D7 21 52  WINDO.!R
-        .byte   $45,$53,$54,$4F,$52,$C5
+		
+/*
+TABLE "PREDEF"
+16 commandes pré-definies (codes de fonction de 16 à 31)
+De C980 à C9DD, la table PREDEF des fonctions pré-definies a également été complètement modifiée
+(chaque chaîne se termine par un caractère +#80, indiqué en gras):
+*/		
+SEDORIC_PREDEF		
+L980	
+		.asc "HEX$","("+$80
+		.asc "CALL","#"+$80
+		.asc "TEXT",$8D ; CR + $80
+		.asc "FORI=1T","O"+$80
+		.asc "LEFT$","("+$80
+		.asc "MID$","("+$80
+		.asc "RIGHT$","("+$80
+        .asc "STR$","("+$80
+		.asc "UNPROT",$8D
+		.byt    $E0 ; @?
+		.asc "USIN","G"+$80
+		.asc "VISUHIRES",$A2 ; "+$80 double quote
+		.asc "VUSER",$8D ; CR + $80
+		.asc "WIDT","H"+$80
+		.asc "WINDO","W"+$80
+		.asc "!RESTOR","E"+$80
+
+/*
+TABLE MOTS-CLÉS SEDORIC (codes 32 à 127)
+
+Les commandes DELETE et USING, ont été supprimées dans leur version "en minuscules" et remplacées
+par CHKSUM et VISUHIRES (en MAJUSCULES seulement). En fait dans la nouvelle table, DELETE
+"en MAJUSCULES" est remplacé par CHKSUM, DELETE "en minuscule" est supprimé et remplacé par
+DELETE  "en  MAJUSCULES",  USING  est  remplacé  par  UNPROT  et  UNPROT  est  remplacé  par
+VISUHIRES. Les 17 octets modifiés figurent en gras dans le dump hexadécimal.
+ 
+L'initiale de chaque commande (indiquée en gras souligné) est implicite. Le code de fonction de chaque
+commande a été indiqué, ainsi que l'adresse d'exécution (voir plus loin la table des adresses d'exécution).
+
+Les mots-clés qui comportent un token BASIC sont codés de deux manières différentes. Lorsque les
+commandes SEDORIC sont tapées en MAJUSCULES, les mots-clés du BASIC sont reconnus et les lettres
+correspondantes sont remplacées par le token BASIC, l'encodage est réalisé par la ROM en ECB9. Au
+contraire, si l'utilisateur tape les mots de SEDORIC en minuscules, chaque lettre du mot sera significative.
+
+On  peut  d'ailleurs  ici  faire  la  remarque  suivante:  il  est  conseillé  à  l'utilisateur  de  taper  son  texte  en
+MAJUSCULES,  car  de  la  sorte  les  mots  sont  raccourcis  et  l'analyse  syntaxique  ultérieure  par  RAM
+overlay, et donc l'exécution, en sont accélérées. De plus, le nombre de bogues affectant les commandes
+tapées en minuscules était si élevé dans la version 1.0 que cette possibilité n'est plus prise en charge dans
+la version 3.0 de SEDORIC.
+*/
+		
 		
 TOKEN_INTIALS_TABLE_A		
 		.byt    "PP"
-        .byte   $80,$00
+        .byte   $80 ; END basic token
+		.byt    $00
 		.byte   "ZERTY"                         ; C9E2 5A 45 52 54 59           ZERTY
         .byte   $00                             ; C9E7 00                       .
         .byte   "CCENT"                         ; C9E8 43 43 45 4E 54           CCENT
@@ -579,16 +667,18 @@ TOKEN_INTIALS_TABLE_W
         .byte   "IDTH"                          ; CBA8 49 44 54 48              IDTH
         .byte   $00                             ; CBAC 00                       .
         .byte   "INDOW"                         ; CBAD 49 4E 44 4F 57           INDOW
+		.byt   $00
+TOKEN_INTIALS_TABLE_SPECIAL		
+		.byt   $9A,$00 ; Restore basic token : $9a
+		.asc 	"]"
+		.byt    $00
 		
-		.byt   $00,$9A,$00
-		.byt    $5D,$00,$FF ; C7B0 4F 57 00 9A 00 5D 00 FF  OW...]..
+		.byt    $FF ; C7B0 4F 57 00 9A 00 5D 00 FF  OW...]..
         .byte   $00,$00,$00
 		
 TOKEN_INITIALS_TABLE:
         .byte   <TOKEN_INTIALS_TABLE_A		                             
 LCBBC:  .byte   >TOKEN_INTIALS_TABLE_A		                             ; $c9de
-
-
 LCBBD:  .byte   $00                             ; CBBD 00                       .
 		.byte   $03
 ; ***************************************************************************************** B COMMANDS TABLE		
@@ -668,40 +758,108 @@ LCBBD:  .byte   $00                             ; CBBD 00                       
 ; ***************************************************************************************** W COMMANDS TABLE				
 		.byt    <TOKEN_INTIALS_TABLE_W,>TOKEN_INTIALS_TABLE_W ; $cba8
 		.byt    $63 ; CC0E 04 9E CB 61 02 A8 CB 63  ...a...c
-        .byte   $02,$CC,$CC,$65,$00,$CC,$CC,$65 ; CC16 02 CC CC 65 00 CC CC 65  ...e...e
-        .byte   $00,$CC,$CC,$65,$00,$B3,$CB,$65 ; CC1E 00 CC CC 65 00 B3 CB 65  ...e...e
+        .byte   $02
+; ***************************************************************************************** X COMMANDS TABLE
+		.byt    $CC,$CC,$65,$00
+; ***************************************************************************************** Y COMMANDS TABLE		
+		.byt    $CC,$CC,$65 ; CC16 02 CC CC 65 00 CC CC 65  ...e...e
+        .byte   $00
+; ***************************************************************************************** Z COMMANDS TABLE				
+		.byt    $CC,$CC,$65,$00
+; ***************************************************************************************** SPECIAL COMMANDS TABLE						
+		.byt    <TOKEN_INTIALS_TABLE_SPECIAL,>TOKEN_INTIALS_TABLE_SPECIAL,$65 ; CC1E 00 CC CC 65 00 B3 CB 65  ...e...e FIXME
         .byte   $03                             ; CC26 03                       .
 
 		
 		
 		
+/*	
 		
+TABLE DES ADRESSES D'EXÉCUTION DES MOTS-CLÉS SEDORIC
+	
+Les adresses (-1) sont regroupées par initiale des mots-clés, sous la forme LL puis HH)
+Les 12 octets modifiés de cette table sont indiqués en gras dans le dump hexadécimal.	
+*/
 		
+		;SEDORIC_COMMAND_ESAVE DDE0
+		; FIXME table
+; A		
+		; SEDORIC_COMMAND_AZERTY
+		.byt  <SEDORIC_COMMAND_APPEND-1,>SEDORIC_COMMAND_APPEND-1
+		.byt  <SEDORIC_COMMAND_AZERTY-1,>SEDORIC_COMMAND_AZERTY-1
+		.byt  <SEDORIC_COMMAND_ACCENT-1,>SEDORIC_COMMAND_ACCENT-1
+; B		
+		.byt  $DD,$F0
+		.byt  $50,$F1
+		.byt  $DF,$FE
+		.byt  $72,$E7
+		.byt  $47,$F1
+		.byt  $8C,$FB
+		.byt  $56,$F1,$4C,$DE,$BB,$F9,$FE,$E9,$75,$E7,$41,$F1,$43,$E4,$36,$E4,$45,$E4,$43,$E3,$29,$F1,$44,$F1,$23,$F1,$26,$F1,$38,$F1
+; E		
+		.byt   $98,$E9
+		.byt   $98,$E9
+		.byt   $AF,$E9
+		.byt   $AF,$E9
+		.byt   <SEDORIC_COMMAND_ERR-1,>SEDORIC_COMMAND_ERR-1
+		.byt   <SEDORIC_COMMAND_ESAVE-1,>SEDORIC_COMMAND_ESAVE-1
 		
-		
-		
-		
-		
-		.byt  $06 ; C820 CC 65 00 B3 CB 65 03 06  .e...e..
-        .byte   $FE,$DD,$EB,$90,$EB,$DD,$F0,$50 ; C828 FE DD EB 90 EB DD F0 50  .......P
-        .byte   $F1,$DF,$FE,$72,$E7,$47,$F1,$8C ; C830 F1 DF FE 72 E7 47 F1 8C  ...r.G..
-        .byte   $FB,$56,$F1,$4C,$DE,$BB,$F9,$FE ; C838 FB 56 F1 4C DE BB F9 FE  .V.L....
-        .byte   $E9,$75,$E7,$41,$F1,$43,$E4,$36 ; C840 E9 75 E7 41 F1 43 E4 36  .u.A.C.6
-        .byte   $E4,$45,$E4,$43,$E3,$29,$F1,$44 ; C848 E4 45 E4 43 E3 29 F1 44  .E.C.).D
-        .byte   $F1,$23,$F1,$26,$F1,$38,$F1,$98 ; C850 F1 23 F1 26 F1 38 F1 98  .#.&.8..
-        .byte   $E9,$98,$E9,$AF,$E9,$AF,$E9,$7E ; C858 E9 98 E9 AF E9 AF E9 7E  .......~
-        .byte   $E9,$DF,$DD,$EC,$E9,$BE,$FB,$9B ; C860 E9 DF DD EC E9 BE FB 9B  ........
-        .byte   $F9,$F4,$EB,$68,$F1,$2D,$EC,$2C ; C868 F9 F4 EB 68 F1 2D EC 2C  ...h.-.,
-        .byte   $F1,$11,$FE,$1F,$DA,$1F,$DA,$3F ; C870 F1 11 FE 1F DA 1F DA 3F  .......?
-        .byte   $E7,$42,$E7,$42,$E7,$CC,$DD,$0A ; C878 E7 42 E7 42 E7 CC DD 0A  .B.B....
-        .byte   $E7,$78,$F0,$72,$FC,$35,$F0,$35 ; C880 E7 78 F0 72 FC 35 F0 35  .x.r.5.5
-        .byte   $F0,$93,$EC,$F6,$DF,$4E,$E7,$94 ; C888 F0 93 EC F6 DF 4E E7 94  .....N..
-        .byte   $FE,$EB,$EB,$6F,$E7,$35,$F1,$3B ; C890 FE EB EB 6F E7 35 F1 3B  ...o.5.;
-        .byte   $F1,$48,$E7,$1E,$E7,$AE,$E0,$4F ; C898 F1 48 E7 1E E7 AE E0 4F  .H.....O
-        .byte   $FA,$78,$E7,$CA,$F9,$F5,$E9,$BF ; C8A0 FA 78 E7 CA F9 F5 E9 BF  .x......
-        .byte   $E7,$8F,$F9,$F4,$E7,$E0,$EB,$BA ; C8A8 E7 8F F9 F4 E7 E0 EB BA  ........
-        .byte   $E9,$74,$FC,$BA,$FA,$4D,$F1,$4B ; C8B0 E9 74 FC BA FA 4D F1 4B  .t...M.K
-        .byte   $E7,$95,$E7,$95,$E7,$B7,$E7,$3A ; C8B8 E7 95 E7 95 E7 B7 E7 3A  ....... 
+		.byt   $EC,$E9
+; F	
+		.byt   $BE,$FB
+		.byt    $9B,$F9
+; H		
+		.byt   $F4,$EB
+; I		
+		.byt   $68,$F1
+		.byt   $2D,$EC
+		.byt    $2C,$F1
+; J		
+		.byt   $11,$FE
+; K		
+		.byt   $1F,$DA
+		.byt   $1F,$DA
+		.byt   $3F,$E7
+		.byt   $42,$E7
+		.byt   $42,$E7
+		.byt   $CC,$DD
+		.byt   $0A,$E7
+; L		
+
+		.byt   <SEDORIC_COMMAND_LINE-1,>SEDORIC_COMMAND_LINE-1
+		.byt   $72,$FC
+		.byt   $35,$F0
+		.byt   $35,$F0
+		.byt   $93,$EC
+		.byt   $F6,$DF
+		.byt   $4E,$E7
+		.byt   $94,$FE
+		.byt   $EB,$EB
+		.byt   $6F,$E7
+; M
+		.byt   $35,$F1
+		.byt   $3B,$F1
+; N		
+		.byt  $48,$E7
+; O				
+		.byt   $1E,$E7
+		.byt   $AE,$E0
+		.byt   $4F,$FA
+; P
+		.byt  $78,$E7
+		.byt  $CA,$F9
+		.byt  $F5,$E9
+		.byt  $BF,$E7
+		.byt  $8F,$F9
+; Q		
+		.byt  $F4,$E7
+		.byt  <SEDORIC_COMMAND_QWERTY-1,>SEDORIC_COMMAND_QWERTY-1
+; R		
+		.byt  $BA,$E9
+		.byt  $74,$FC
+		.byt  $BA,$FA
+		.byt  $4D,$F1
+		.byt  $4B,$E7,$95,$E7,$95,$E7,$B7,$E7,$3A ; C8B8 E7 95 E7 95 E7 B7 E7 3A  ....... 
         .byte   $EA,$53,$F1,$52,$E8,$52,$E8,$FB ; C8C0 EA 53 F1 52 E8 52 E8 FB  .S.R.R..
         .byte   $E9,$F2,$E9,$4C,$DD,$49,$DD,$52 ; C8C8 E9 F2 E9 4C DD 49 DD 52  ...L.I.R
         .byte   $DD,$4F,$DD,$FB,$E5,$59,$F1,$95 ; C8D0 DD 4F DD FB E5 59 F1 95  .O...Y..
@@ -715,16 +873,25 @@ LCCFA:  .byte   "BAKCOM?????????BAK"            ; CCFA 42 41 4B 43 4F 4D 3F 3F  
 	
 		.byt $28,$50,$35,$5D ; C908 3F 42 41 4B 28 50 35 5D  ?BAK(P5]
         .byte   $00,$00,$01,$01,$FA,$BF,$23,$34 ; C910 00 00 01 01 FA BF 23 34  ......#4
-        .byte   $36,$37,$FF,$7B,$0E,$FA,$35,$10 ; C918 36 37 FF 7B 0E FA 35 10  67.{..5.
+        .byte   $36,$37
+		
+LCD1A:  .byte   $FF,$7B,$0E,$FA,$35             ; CD1A FF 7B 0E FA 35           .{..5		
+
+LCD1F:  		
+		.byt    $10 ; C918 36 37 FF 7B 0E FA 35 10  67.{..5.
         .byte   $81,$C9,$0F,$DA,$A2
 		
 LCD25:  .byte   $C6,$C9,$88,$02,$88,$02         ; CD25 C6 C9 88 02 88 02        ......		
 	
 		
-		.byt $4F,$46,$46,$53,$45 ; C928 02 88 02 4F 46 46 53 45  ...OFFSE
-        .byte   $54,$C7,$81,$C2,$82,$45,$D3,$66 ; C930 54 C7 81 C2 82 45 D3 66  T....E.f
-        .byte   $A5,$C8,$A3,$8F,$D2,$42,$B5,$98 ; C938 A5 C8 A3 8F D2 42 B5 98  .....B..
-        .byte   $E0
+		
+
+LCD2B:  .byte   $4F,$46,$46                     ; CD2B 4F 46 46                 OFF		
+
+
+LCD2E:  .byte   $53,$45,$54,$C7,$81,$C2,$82,$45 ; CD2E 53 45 54 C7 81 C2 82 45  SET....E
+        .byte   $D3,$66,$A5,$C8,$A3,$8F,$D2,$42 ; CD36 D3 66 A5 C8 A3 8F D2 42  .f.....B
+        .byte   $B5,$98,$E0                     ; CD3E B5 98 E0                 ...
 
 QWAZERTY_CONV:
         .byte   $B1,$BE,$AE,$AA,$82,$93         ; CD41 B1 BE AE AA 82 93        ......
@@ -989,11 +1156,20 @@ adress_return:
 ; ----------------------------------------------------------------------------
         rts     
 		
-		
+	
+
+	
 		.byt   $20,$D8,$D5,$48 ; CD60 C3 F4 C3 60 20 D8 D5 48  ...` ..H
-        .byte   $C4,$44,$C4,$60,$A2,$4D,$2C,$A2 ; CD68 C4 44 C4 60 A2 4D 2C A2  .D.`.M,.
-        .byte   $A3,$20,$D8,$D5,$85,$C4,$7E,$C4 ; CD70 A3 20 D8 D5 85 C4 7E C4  . ....~.
-       
+        .byte   $C4,$44,$C4,$60,$A2,$4D,$2C
+
+SEDORIC_DISPLAY_TYPE_MISMATCH:
+        ldx     #$A3                            ; D16F A2 A3                    ..
+        jsr     SEDORIC_XROM                    ; D171 20 D8 D5                  ..
+; adresse ROM 1.0 adresse ROM 1.1
+Garbage2:
+        .byte   $85,$C4,$7E,$C4                 ; D174 85 C4 7E C4              ..~.
+		
+
 
 	   ; Réinitialise la pile, affiche ' ERROR' et retourne au 'Ready'
 SEDORIC_INIT_STACK_DISPLAY_ERROR_AND_GOTO_READY:
@@ -1002,6 +1178,7 @@ SEDORIC_INIT_STACK_DISPLAY_ERROR_AND_GOTO_READY:
         .byte   $A3,$C4,$96,$C4                 ; D17B A3 C4 96 C4              ....
 ; ----------------------------------------------------------------------------
         rts                                     ; D17F 60                       `
+	
 	
         .byte   $20,$D8,$D5,$B5,$C4,$A8,$C4,$60 ; CD80 20 D8 D5 B5 C4 A8 C4 60   ......`
         .byte   $A5,$9A,$A4,$9B,$20,$D8,$D5,$73 ; CD88 A5 9A A4 9B 20 D8 D5 73  .... ..s
@@ -1037,9 +1214,14 @@ LD1C4
 LD1DC:  jsr     SEDORIC_XROM                    ; D1DC 20 D8 D5                  ..		
 		.byt  $1C ; CDD8 C9 23 CA 60 20 D8 D5 1C  .#.` ...
         .byte   $CA,$4E,$CA
+
+LD1E3:  jsr     SEDORIC_XROM                    ; D1E3 20 D8 D5                  ..
+		.byt      $0D,$CA ; CDE0 CA 4E CA 20 D8 D5 0D CA  .N. ....
+        .byte   $3F,$CA
+        rts                                     ; D1EA 60                       `
+
 		
-		.byt  $20,$D8,$D5,$0D,$CA ; CDE0 CA 4E CA 20 D8 D5 0D CA  .N. ....
-        .byte   $3F,$CA,$60,$20,$D8,$D5,$41,$CA ; CDE8 3F CA 60 20 D8 D5 41 CA  ?.` ..A.
+		.byt   $20,$D8,$D5,$41,$CA ; CDE8 3F CA 60 20 D8 D5 41 CA  ?.` ..A.
         .byte   $73,$CA,$60,$20,$9E,$D3,$20,$D8 ; CDF0 73 CA 60 20 9E D3 20 D8  s.` .. .
         .byte   $D5,$98,$CA,$E2,$CA,$60,$20,$D8 ; CDF8 D5 98 CA E2 CA 60 20 D8  .....` .
         .byte   $D5,$EF,$CA,$39,$CB,$60
@@ -1053,10 +1235,9 @@ LD20E:  jsr     SEDORIC_XROM                    ; D20E 20 D8 D5                 
 		.byt $12,$CC,$D9,$CC					
         rts                                     ; D215 60   		
 		
-		.byt  $20,$24 ; CE10 D5 12 CC D9 CC 60 20 24  .....` $
-        .byte   $D2,$18,$24
-
-
+LD216:  jsr     LD224                           ; D216 20 24 D2                  $.
+LD219:  clc                                     ; D219 18                       .
+        .byte   $24                             ; D21A 24                       $
 LD21B:  sec                                     ; D21B 38                       8
 LD21C:  jsr     SEDORIC_XROM                    ; D21C 20 D8 D5                  ..
 		.byt  $7D,$CE,$09,$CF
@@ -1066,8 +1247,12 @@ LD224:  jsr     SEDORIC_XROM                    ; D224 20 D8 D5                 
 		.byte   $8B,$CE,$17,$CF
         rts                                     ; D22B 60                       `			
 		
-		.byt     $A9,$2C,$20,$D8 ; CE28 CE 17 CF 60 A9 2C 20 D8  ...`., .
-        .byte   $D5,$DB,$CF,$67,$D0,$4C,$A1,$D3 ; CE30 D5 DB CF 67 D0 4C A1 D3  ...g.L..
+LD22C:  lda     #$2C                            ; D22C A9 2C                    .,
+LD22E:  jsr     SEDORIC_XROM                    ; D22E 20 D8 D5                  ..		
+		
+		.byt    $DB,$CF,$67,$D0
+		jmp LD3A1
+		
         .byte   $20,$D8,$D5,$FC,$D0,$88,$D1,$85 ; CE38 20 D8 D5 FC D0 88 D1 85   .......
         .byte   $D3,$84,$D4,$60
 		
@@ -1092,25 +1277,43 @@ LD274:  jsr     LD21B                           ; D274 20 1B D2                 
 LD277:  jsr     SEDORIC_XROM                    ; D277 20 D8 D5                  ..
         .byt   $15,$D7,$D0,$D7
         rts                                     ; D27E 60                       `	
-		
 
-		.byt    $20 ; CE78 D8 D5 15 D7 D0 D7 60 20  ......` 
-        .byte   $16,$D2,$20,$D8,$D5,$10,$D8,$CB ; CE80 16 D2 20 D8 D5 10 D8 CB  .. .....
-        .byte   $D8,$60,$20,$D8,$D5,$6B,$D8,$26 ; CE88 D8 60 20 D8 D5 6B D8 26  .` ..k.&
+LD27F:  jsr     LD216                           ; D27F 20 16 D2                  .. popme
+LD282:  jsr     SEDORIC_XROM                    ; D282 20 D8 D5                  ..
+		.byt   $10,$D8,$CB,$D8
+        rts                                     ; D289 60                       `
+
+LD28A:  jsr     SEDORIC_XROM                    ; D28A 20 D8 D5                  ..
+		.byt     $6B,$D8,$26 ; CE88 D8 60 20 D8 D5 6B D8 26  .` ..k.&
                              ; D321 60                       `
      
 
-		.byte   $D9,$60
+		.byte   $D9
+		rts
 		
 		
 		
 		.byt    $20,$D8,$D5,$96,$D9,$22 ; CE90 D9 60 20 D8 D5 96 D9 22  .` ...."
         .byte   $DA,$60,$20,$D8,$D5,$80,$DA,$0B ; CE98 DA 60 20 D8 D5 80 DA 0B  .` .....
         .byte   $DB,$60,$20,$D8,$D5,$97,$DA,$22 ; CEA0 DB 60 20 D8 D5 97 DA 22  .` ...."
-        .byte   $DB,$60,$20,$D8,$D5,$B7,$DC,$ED ; CEA8 DB 60 20 D8 D5 B7 DC ED  .` .....
-        .byte   $DC,$60,$20,$D8,$D5,$E0,$DD,$E4 ; CEB0 DC 60 20 D8 D5 E0 DD E4  .` .....
-        .byte   $DD,$60,$20,$D8,$D5,$73,$DE,$7B ; CEB8 DD 60 20 D8 D5 73 DE 7B  .` ..s.{
-        .byte   $DE,$60
+        .byte   $DB,$60
+
+LD2AA:  jsr     SEDORIC_XROM                    ; D2AA 20 D8 D5                  ..		
+		.byt   $B7,$DC,$ED ; CEA8 DB 60 20 D8 D5 B7 DC ED  .` .....
+        .byte   $DC
+		rts
+		
+		.byt  $20,$D8,$D5,$E0,$DD,$E4 ; CEB0 DC 60 20 D8 D5 E0 DD E4  .` .....
+        .byte   $DD,$60
+
+	
+LD2BA:  jsr     SEDORIC_XROM                    ; D2BA 20 D8 D5                  ..
+        .byt $73,$DE,$7B,$DE
+        rts                                     ; D2C1 60                       `		
+		
+		
+		
+		
 		
 		
 LD2C2		
@@ -1129,15 +1332,30 @@ LD2D2:
 		.byte   $D1,$E0,$D5 ; CED0 DF 60 20 D8 D5 D1 E0 D5  .` .....
         .byte   $E0
 		rts
-		
 
+LD2DA:  jsr     SEDORIC_XROM                    ; D2DA 20 D8 D5                  ..	
+		.byt  $6D,$E2,$71 ; CED8 E0 60 20 D8 D5 6D E2 71  .` ..m.q
+        .byte   $E2
+        rts
 		
-		.byt  $20,$D8,$D5,$6D,$E2,$71 ; CED8 E0 60 20 D8 D5 6D E2 71  .` ..m.q
-        .byte   $E2,$60,$20,$D8,$D5,$79,$E3,$7D ; CEE0 E2 60 20 D8 D5 79 E3 7D  .` ..y.}
-        .byte   $E3,$60,$20,$D8,$D5,$87,$E3,$8B ; CEE8 E3 60 20 D8 D5 87 E3 8B  .` .....
-        .byte   $E3,$60,$20,$D8,$D5,$8E,$E3,$92 ; CEF0 E3 60 20 D8 D5 8E E3 92  .` .....
-        .byte   $E3,$60,$20,$D8,$D5,$9D,$E7,$53 ; CEF8 E3 60 20 D8 D5 9D E7 53  .` ....S
-        .byte   $E8,$60
+		.byt    $20,$D8,$D5,$79,$E3,$7D ; CEE0 E2 60 20 D8 D5 79 E3 7D  .` ..y.}
+        .byte   $E3,$60
+		
+LD2EA:	
+        jsr     SEDORIC_XROM                    ; D2CA 20 D8 D5                  ..	
+		.byt   $87,$E3,$8B ; CEE8 E3 60 20 D8 D5 87 E3 8B  .` .....
+        .byte   $E3
+		rts 
+
+LD2F2:  jsr     SEDORIC_XROM                    ; D2F2 20 D8 D5                  ..		
+		.byt  $8E,$E3,$92 ; CEF0 E3 60 20 D8 D5 8E E3 92  .` .....
+        .byte   $E3
+		rts
+		
+LD2FA:  jsr     SEDORIC_XROM                    ; D2FA 20 D8 D5                  ..
+		.byt $9D,$E7,$53,$E8
+		rts
+		
 
 
 
@@ -1152,9 +1370,12 @@ LD30A
 		.byt 	$C7,$EC,$E0 ; CF08 EB 60 20 D8 D5 C7 EC E0  .` .....
         .byte   $ED
 		rts
-		
-		.byt    $20,$D8,$D5,$79,$F0,$10 ; CF10 ED 60 20 D8 D5 79 F0 10  .` ..y..
-        .byte   $F1,$60
+
+LD312:  jsr     SEDORIC_XROM                    ; D312 20 D8 D5                  ..
+    
+		.byt    $79,$F0,$10 ; CF10 ED 60 20 D8 D5 79 F0 10  .` ..y..
+        .byte   $F1
+		rts
 
 
 
@@ -1205,7 +1426,7 @@ LD34F:  lda     COMMON_EXT_TABLE,x              ; D34F BD F7 CC                 
 LD35C:  lda     SEDORIC_EXTER                   ; D35C AD 0D C0                 ...
         ldy     $C00E                           ; D35F AC 0E C0                 ...
         bne     LD376                           ; D362 D0 12                    ..
-LD364:  lda     SEDORIC_EXTMS                   ; D364 AD 0F C0                 ...
+XAFSC:  lda     SEDORIC_EXTMS                   ; D364 AD 0F C0                 ...
         ldy     $C010                           ; D367 AC 10 C0                 ...
         bne     LD376                           ; D36A D0 0A                    ..
 
@@ -1325,10 +1546,10 @@ LD481:  cmp     #$2C                            ; D481 C9 2C                    
         bne     LD4A3                           ; D49C D0 05                    ..
 LD49E:  sty     SEDORIC_BUFNOM                  ; D49E 8C 28 C0                 .(.
         bcs     LD475                           ; D4A1 B0 D2                    ..
-LD4A3:  lda     $E9                             ; D4A3 A5 E9                    ..
+LD4A3:  lda   	BASIC11_TXTPTR                             ; D4A3 A5 E9                    ..
         bne     LD4A9                           ; D4A5 D0 02                    ..
-        dec     $EA                             ; D4A7 C6 EA                    ..
-LD4A9:  dec     $E9                             ; D4A9 C6 E9                    ..
+        dec     BASIC11_TXTPTR+1                             ; D4A7 C6 EA                    ..
+LD4A9:  dec     BASIC11_TXTPTR                             ; D4A9 C6 E9                    ..
 
 LD4AB:  jsr     LD224                           ; D4AB 20 24 D2                  $. 
         jsr     LD274                           ; D4AE 20 74 D2                  t. 
@@ -1342,14 +1563,14 @@ LD4B7:  lda     ($91),y                         ; D4B7 B1 91                    
         dec     SEDORIC_TRAV1                   ; D4BD C6 F3                    ..
 LD4BF:  dey                                     ; D4BF 88                       .
         bpl     LD4B7                           ; D4C0 10 F5                    ..
-        lda     $E9                             ; D4C2 A5 E9                    ..
+        lda     BASIC11_TXTPTR                             ; D4C2 A5 E9                    ..
         pha                                     ; D4C4 48                       H
-        lda     $EA                             ; D4C5 A5 EA                    ..
+        lda     BASIC11_TXTPTR+1                             ; D4C5 A5 EA                    ..
         pha                                     ; D4C7 48                       H
         lda     $91                             ; D4C8 A5 91                    ..
-        sta     $E9                             ; D4CA 85 E9                    ..
+        sta     BASIC11_TXTPTR                             ; D4CA 85 E9                    ..
         lda     $92                             ; D4CC A5 92                    ..
-        sta     $EA                             ; D4CE 85 EA                    ..
+        sta     BASIC11_TXTPTR+1                             ; D4CE 85 EA                    ..
 
 
 LD4D0:  jsr     LD39E                           ; D4D0 20 9E D3                  .. XCRGOT
@@ -1357,8 +1578,9 @@ LD4D0:  jsr     LD39E                           ; D4D0 20 9E D3                 
         tax                                     ; D4D5 AA                       .
         cmp     #$04                            ; D4D6 C9 04                    ..
         bcs     LD509                           ; D4D8 B0 2F                    ./ 
-        ldy     #$01                            ; D4DA A0 01                    ..
-        lda     ($E9),y                         ; D4DC B1 E9                    ..
+        ldy     #$01                            ; D4DA A0 01  
+		; looking if the TXTPTR we have a letter drive in the command
+        lda     (BASIC11_TXTPTR),y                         ; D4DC B1 E9                    ..
         cmp     #"-" 							; is it a "-" ?                             ; D4DE C9 2D                    .-
         beq     LD4E6                           ; D4E0 F0 04                    ..
         cmp     #$CD                            ; is it a "-" basic token ? 
@@ -1423,9 +1645,9 @@ LD53F:  dec     SEDORIC_TRAV1                   ; D53F C6 F3                    
         bpl     LD559                           ; D54F 10 08                    ..
         bmi     LD5AC                           ; D551 30 59                    0Y
 LD553:  pla                                     ; D553 68                       h
-        sta     $EA                             ; D554 85 EA                    ..
+        sta     BASIC11_TXTPTR+1                             ; D554 85 EA                    ..
         pla                                     ; D556 68                       h
-        sta     $E9                             ; D557 85 E9                    ..
+        sta     BASIC11_TXTPTR                             ; D557 85 E9                    ..
 LD559:  lda     $C032                           ; D559 AD 32 C0                 .2.
         cmp     #$20                            ; D55C C9 20                    . 
 		
@@ -1649,8 +1871,8 @@ LD692:  sta     SEDORIC_NOLIGN                  ; D692 8D FE 04                 
         sty     $A9                             ; D6B0 84 A9                    ..
         lda     $C019                           ; D6B2 AD 19 C0                 ...
         ldy     $C01A                           ; D6B5 AC 1A C0                 ...
-        sta     $E9                             ; D6B8 85 E9                    ..
-        sty     $EA                             ; D6BA 84 EA                    ..
+        sta     BASIC11_TXTPTR                             ; D6B8 85 E9                    ..
+        sty     BASIC11_TXTPTR+1                             ; D6BA 84 EA                    ..
         lda     $C01F                           ; D6BC AD 1F C0                 ...
         ldy     $C020                           ; D6BF AC 20 C0                 . .
         sta     $C021                           ; D6C2 8D 21 C0                 .!.
@@ -1764,13 +1986,26 @@ LD791:  ora     #$30                            ; D791 09 30                    
         lda     SEDORIC_TRAV1                   ; D799 A5 F3                    ..
         jmp     LD624                           ; D79B 4C 24 D6                 L$. 
                             ; D7C8 60                       `
-	
-		.byt   $38,$24 ; D398 C8 A5 F3 4C 24 D6 38 24  ...L$.8$
-        .byte   $18,$66,$F2,$A2,$0B,$BD,$29,$C0 ; D3A0 18 66 F2 A2 0B BD 29 C0  .f....).
-        .byte   $C9,$3F,$F0,$05,$CA,$10,$F6,$38 ; D3A8 C9 3F F0 05 CA 10 F6 38  .?.....8
-        .byte   $60,$26,$F2,$90,$FB,$A2,$05,$2C ; D3B0 60 26 F2 90 FB A2 05 2C  `&.....,
-       
 
+LD79E:  sec                                     ; D79E 38                       8
+        .byte   $24                             ; D79F 24                       $
+
+LD7A0:  clc                                     ; D7A0 18                       .
+        ror     SEDORIC_TRAV0                   ; D7A1 66 F2                    f.
+        ldx     #$0B                            ; D7A3 A2 0B                    ..
+LD7A5:  lda     $C029,x                         ; D7A5 BD 29 C0                 .).
+        cmp     #$3F                            ; D7A8 C9 3F                    .?
+        beq     LD7B1                           ; D7AA F0 05                    ..
+        dex                                     ; D7AC CA                       .
+        bpl     LD7A5                           ; D7AD 10 F6                    ..
+        sec                                     ; D7AF 38                       8
+LD7B0:  rts                                     ; D7B0 60                       `							
+
+
+LD7B1:  rol     SEDORIC_TRAV0                   ; D7B1 26 F2                    &.
+        bcc     LD7B0                           ; D7B3 90 FB                    ..
+        ldx     #$05                            ; D7B5 A2 05                    ..
+        .byte   $2C                             ; D7B7 2C                       ,
 
 LD7B8:  ldx     #$01                            ; D7B8 A2 01                    ..
         jmp     LD67E                           ; D7BA 4C 7E D6                 L~.
@@ -2038,7 +2273,7 @@ LD9B0:  lda     #$00                            ; D9B0 A9 00                    
         sta     LE7D2                           ; D9B5 8D D2 E7                 ...
         sta     LE7D3                           ; D9B8 8D D3 E7                 ... 
         jsr     LE55C                           ; D9BB 20 5C E5                  \. 
-LD9BE:  jsr     LDA63                           ; D9BE 20 63 DA                  c. 
+LD9BE:  jsr     XBUCA                           ; D9BE 20 63 DA                  c. 
         ldx     #$10                            ; D9C1 A2 10                    .. 
         cpx     SEDORIC_BUF3+2                  ; D9C3 EC 02 C3                 ...
         beq     LD9EC                           ; D9C6 F0 24                    .$
@@ -2093,12 +2328,12 @@ LDA50:  jsr     LDA60                           ; DA50 20 60 DA                 
 		
 READ_SECTOR_TRACK:		
         ldx     #$C1                            ; DA5D A2 C1                    ..
-		.byt	$2c
+        .byt	$2c
 LDA60		
-		ldx		#$c2
-		.byt 	$2c
-LDA63
-		ldx 	#$c3
+        ldx		#$c2
+        .byt 	$2c
+XBUCA
+        ldx 	#$c3
         stx     SEDORIC_RWBUF+1                 ; DA65 8E 04 C0                 ...
         ldx     #$00                            ; DA68 A2 00                    ..
         stx     SEDORIC_RWBUF                   ; DA6A 8E 03 C0                 ...
@@ -2106,11 +2341,11 @@ LDA6D:  sta     SEDORIC_TRACK                   ; DA6D 8D 01 C0                 
         sty     SEDORIC_SECTOR                  ; DA70 8C 02 C0                 ...
 XPRSEC
 LDA73		
-		ldx     #$88                            ; DA73 A2 88                    ..
+        ldx     #$88                            ; DA73 A2 88                    ..
 LDA75:  jsr     XRWTS                           ; DA75 20 CD CF                  .. 
         beq     LDACD                           ; DA78 F0 53                    .S 
-		ldx     #$03                            ; DA7A A2 03                    ..
-		bvc     LDA7F                           ; DA7C 50 01                    P.
+        ldx     #$03                            ; DA7A A2 03                    ..
+        bvc     LDA7F                           ; DA7C 50 01                    P.
         inx                                     ; DA7E E8                       .
 LDA7F:  jmp     LD67E                           ; DA7F 4C 7E D6                 L~. 
 	
@@ -2169,8 +2404,12 @@ LDADF:  sta     ($0E),y                         ; DADF 91 0E                    
         bne     LDADF                           ; DAE2 D0 FB                    ..
         rts                                     ; DAE4 60                       `
 
-		.byt  	$AD,$25,$C0 ; D6E0 0E C8 D0 FB 60 AD 25 C0  ....`.%. FIXME
-        .byte   $AC,$26,$C0,$20,$63,$DA
+load_inbuf3_sector_indexed_in_POSNMP_and_POSNMS
+;XPBUF3 charge dans BUF3 le secteur Y de la piste A
+LDAE5
+		LDA $C025 ; piste (POSNMP)
+		LDY $C026 ; secteur (POSNMS)
+		JSR XBUCA
 		
 LDAEE:  ldx     $C027                           ; DAEE AE 27 C0                 .'.
         ldy     #$F0                            ; DAF1 A0 F0                    ..
@@ -2184,7 +2423,7 @@ LDAF3:  lda     $BF39,y                         ; DAF3 B9 39 BF                 
 ; ----------------------------------------------------------------------------
 LDAFE:  lda     $C025                           ; DAFE AD 25 C0                 .%.
         ldy     $C026                           ; DB01 AC 26 C0                 .&.
-        jsr     LDA63                           ; DB04 20 63 DA                  c.
+        jsr     XBUCA                           ; DB04 20 63 DA                  c.
 LDB07:  ldx     $C027                           ; DB07 AE 27 C0                 .'.
         ldy     #$F0                            ; DB0A A0 F0                    ..
 LDB0C:  lda     SEDORIC_BUF3,x                  ; DB0C BD 00 C3                 ...
@@ -2211,7 +2450,7 @@ XTVNM:  jsr     CMD_REN                         ; DB30 20 37 E5                 
         nop                                     ; DB33 EA                       .
 LDB34:  sta     $C025                           ; DB34 8D 25 C0                 .%.
         sty     $C026                           ; DB37 8C 26 C0                 .&.
-        jsr     LDA63                           ; DB3A 20 63 DA                  c.
+        jsr     XBUCA                           ; DB3A 20 63 DA                  c.
         ldx     #$10                            ; DB3D A2 10                    ..
         bne     LDB48                           ; DB3F D0 07                    ..
 LDB41:  lda     $C027                           ; DB41 AD 27 C0                 .'.
@@ -2263,7 +2502,7 @@ LDBA5:  jsr     CMD_REN                         ; DBA5 20 37 E5                 
         nop                                     ; DBA8 EA                       .
 LDBA9:  sta     $C025                           ; DBA9 8D 25 C0                 .%.
         sty     $C026                           ; DBAC 8C 26 C0                 .&.
-        jsr     LDA63                           ; DBAF 20 63 DA                  c.
+        jsr     XBUCA                           ; DBAF 20 63 DA                  c.
         ldx     SEDORIC_BUF3+2                  ; DBB2 AE 02 C3                 ...
         bne     LDBBF                           ; DBB5 D0 08                    ..
         lda     SEDORIC_BUF3                    ; DBB7 AD 00 C3                 ...
@@ -2469,8 +2708,24 @@ LDD45:  dec     SEDORIC_BUF2+2                  ; DD45 CE 02 C2                 
         clc                                     ; DD48 18                       .
 LDD49:  rts    
 
-	.byt $A9,$40,$2C,$A9,$C0,$2C ; D948 18 60 A9 40 2C A9 C0 2C  .`.@,..,
+		.byt $A9,$40,$2C,$A9,$C0,$2C ; D948 18 60 A9 40 2C A9 C0 2C  .`.@,..,
         .byte   $A9,$80,$2C,$A9,$00,$20,$28,$DE ; D950 A9 80 2C A9 00 20 28 DE  ..,.. (.
+		
+/*
+EXÉCUTION DE LA COMMANDE SEDORIC ESAVE
+Rappel de la syntaxe
+
+ESAVE nom_de_fichier_non_ambigu
+
+Cette commande, qui est équivalante à SAVE nom_de_fichier,A#BB80,E#BFDF en mode TEXT ou à
+SAVE nom_de_fichier,A#A000,E#BF3F en mode HIRES, permet de sauvegarder l'écran courant qu'il sera
+possible de recharger à condition d'être dans le même mode.
+*/	
+
+/*
+
+*/
+		
         .byte   $20,$4F,$D4,$20,$9E,$D7,$20,$9E ; D958 20 4F D4 20 9E D7 20 9E   O. .. .
         .byte   $D3,$D0,$03,$4C,$0B,$DE,$20,$2C ; D960 D3 D0 03 4C 0B DE 20 2C  ...L.. ,
         .byte   $D2,$C9,$54,$D0,$1C,$20,$98,$D3 ; D968 D2 C9 54 D0 1C 20 98 D3  ..T.. ..
@@ -2488,20 +2743,41 @@ LDD49:  rts
         .byte   $8C,$57,$C0,$90,$3E,$20,$4F,$D4 ; D9C8 8C 57 C0 90 3E 20 4F D4  .W..> O.
         .byte   $A9,$00,$A0,$C8,$8D,$52,$C0,$8C ; D9D0 A9 00 A0 C8 8D 52 C0 8C  .....R..
         .byte   $53,$C0,$A9,$DD,$A0,$C9,$D0,$1E ; D9D8 53 C0 A9 DD A0 C9 D0 1E  S.......
-        .byte   $20,$4F,$D4,$AD,$1F,$02,$D0,$08 ; D9E0 20 4F D4 AD 1F 02 D0 08   O......
-        .byte   $A2,$80,$A0,$BB,$A9,$DF,$D0,$06 ; D9E8 A2 80 A0 BB A9 DF D0 06  ........
-        .byte   $A2,$00,$A0,$A0,$A9,$3F,$8E,$52 ; D9F0 A2 00 A0 A0 A9 3F 8E 52  .....?.R
-        .byte   $C0,$8C,$53,$C0,$A0,$BF,$A2,$40 ; D9F8 C0 8C 53 C0 A0 BF A2 40  ..S....@
-        .byte   $20,$3B,$DE,$A9,$C0
-		
-		
-		
-		.byt $8D,$4D,$C0 ; DA00 20 3B DE A9 C0 8D 4D C0   ;....M.
-        .byte   $20,$9E,$D7,$38,$AD,$54,$C0,$ED ; DA08 20 9E D7 38 AD 54 C0 ED   ..8.T..
-        .byte   $52,$C0,$8D,$4F,$C0,$AD,$55,$C0 ; DA10 52 C0 8D 4F C0 AD 55 C0  R..O..U.
-        .byte   $ED,$53,$C0,$8D,$50,$C0,$B0,$7C ; DA18 ED 53 C0 8D 50 C0 B0 7C  .S..P..|
-        .byte   $A2,$08,$2C,$A2,$09,$4C,$7E,$D6 ; DA20 A2 08 2C A2 09 4C 7E D6  ..,..L~.
-      
+     
+SEDORIC_COMMAND_ESAVE:
+LDDE0
+        jsr     LD44F                           ; DDE0 20 4F D4                  O.
+        lda     $021F                           ; DDE3 AD 1F 02                 ...
+        bne     LDDF0                           ; DDE6 D0 08                    ..
+        ldx     #$80                            ; DDE8 A2 80                    ..
+        ldy     #$BB                            ; DDEA A0 BB                    .. FIXME
+        lda     #$DF                            ; DDEC A9 DF                    .. IXME
+        bne     LDDF6                           ; DDEE D0 06                    ..
+LDDF0:  ldx     #$00                            ; DDF0 A2 00                    ..
+        ldy     #$A0                            ; DDF2 A0 A0                    ..
+        lda     #$3F                            ; DDF4 A9 3F                    .?
+LDDF6:  stx     $C052                           ; DDF6 8E 52 C0                 .R.
+        sty     $C053                           ; DDF9 8C 53 C0                 .S.
+        ldy     #$BF                            ; DDFC A0 BF                    ..
+
+        ldx     #$40                            ; DDFE A2 40                    .@
+LDE00:  jsr     LDE3B                           ; DE00 20 3B DE                  ;.
+        lda     #$C0                            ; DE03 A9 C0                    ..
+        sta     $C04D                           ; DE05 8D 4D C0                 .M.
+        jsr     LD79E                           ; DE08 20 9E D7                  .. 
+LDE0B:  sec                                     ; DE0B 38                       8
+        lda     $C054                           ; DE0C AD 54 C0                 .T.
+        sbc     $C052                           ; DE0F ED 52 C0                 .R.
+        sta     $C04F                           ; DE12 8D 4F C0                 .O.
+        lda     $C055                           ; DE15 AD 55 C0                 .U.
+        sbc     $C053                           ; DE18 ED 53 C0                 .S.
+        sta     $C050                           ; DE1B 8D 50 C0                 .P.
+        bcs     LDE9C                           ; DE1E B0 7C                    .|
+LDE20:  ldx     #$08                            ; DE20 A2 08                    ..
+        .byte   $2C                             ; DE22 2C                       ,
+LDE23:  ldx     #$09                            ; DE23 A2 09                    ..
+        jmp     LD67E                           ; DE25 4C 7E D6                 L~.	 
+
 ; ----------------------------------------------------------------------------
 LDE28:  sta     $C04D                           ; DE28 8D 4D C0                 .M.
         lda     $9A                             ; DE2B A5 9A                    ..
@@ -2694,9 +2970,12 @@ LDFD4:  jsr     XSMAP                           ; DFD4 20 8A DA                 
         jsr     LDAEE                           ; DFD7 20 EE DA                  ..
         cli                                     ; DFDA 58                       X
         jmp     XSCAT                           ; DFDB 4C 82 DA                 L..
-	
-		.byt 	$AD,$1F ; DBD8 EE DA 58 4C 82 DA AD 1F  ..XL....
-        .byte   $02,$F0,$10,$4C,$6F,$D1
+
+LDFDE:  lda     $021F                           ; DFDE AD 1F 02                 ...
+        beq     LDFF3                           ; DFE1 F0 10                    ..
+        jmp     SEDORIC_DISPLAY_TYPE_MISMATCH   ; DFE3 4C 6F D1                 Lo.
+		
+
 		
 LDFE6:  lda     #$00                            ; DFE6 A9 00                    ..
         ldx     #$03                            ; DFE8 A2 03                    ..
@@ -3146,7 +3425,7 @@ LE566:  pla                                     ; E566 68                       
         sta     LF638,x                         ; E572 9D 38 F6                 .8.
         rts                                     ; E575 60                       `
 
-LE576:  jsr     LDA63                           ; E576 20 63 DA                  c. 
+LE576:  jsr     XBUCA                           ; E576 20 63 DA                  c. 
         lda     SEDORIC_DRIVE                   ; E579 AD 00 C0                 ...
         asl                                 ; E57C 0A                       .
         asl                                   ; E57D 0A                       .
@@ -3386,6 +3665,9 @@ LE7D3:
 LE7D4:
 	.byt 0
 
+	
+	
+	
         .byt $00,$4C,$C4 ; E3D0 00 00 00 00 00 00 4C C4  ......L.
         .byte   $D1,$08,$A6,$9A,$A4,$9B,$28,$F0 ; E3D8 D1 08 A6 9A A4 9B 28 F0  ......(.
         .byte   $0A,$20,$FA,$D2,$20,$9C,$D1,$A6 ; E3E0 0A 20 FA D2 20 9C D1 A6  . .. ...
@@ -3418,7 +3700,11 @@ LE7D4:
         .byte   $E9,$48,$A9,$35,$85,$E9,$20,$94 ; E4B8 E9 48 A9 35 85 E9 20 94  .H.5.. .
         .byte   $D1,$68,$85,$E9,$98,$38,$E9,$05 ; E4C0 D1 68 85 E9 98 38 E9 05  .h...8..
         .byte   $20,$64,$D2,$A4,$D0,$EA,$B9,$35 ; E4C8 20 64 D2 A4 D0 EA B9 35   d.....5
-        .byte   $00,$91,$D1,$88,$10,$F8,$A0,$02 ; E4D0 00 91 D1 88 10 F8 A0 02  ........
+        .byte   $00,$91,$D1,$88,$10,$F8
+		
+
+		
+		.byt    $A0,$02 ; E4D0 00 91 D1 88 10 F8 A0 02  ........
         .byte   $B9,$D0,$00,$91,$B6,$88,$10,$F8 ; E4D8 B9 D0 00 91 B6 88 10 F8  ........
         .byte   $60,$20,$38,$D2,$20,$74,$D2,$AA ; E4E0 60 20 38 D2 20 74 D2 AA  ` 8. t..
         .byte   $F0,$F6,$85,$F3,$A2,$00,$A0,$00 ; E4E8 F0 F6 85 F3 A2 00 A0 00  ........
@@ -3433,17 +3719,65 @@ LE7D4:
         .byte   $F3,$F0,$08,$A4,$F2,$C8,$D0,$B8 ; E530 F3 F0 08 A4 F2 C8 D0 B8  ........
         .byte   $4C,$77,$E9,$8A,$20,$64,$D2,$A4 ; E538 4C 77 E9 8A 20 64 D2 A4  Lw.. d..
         .byte   $D0,$88,$B9,$00,$C1,$91,$D1,$98 ; E540 D0 88 B9 00 C1 91 D1 98  ........
-        .byte   $D0,$F7,$4C,$D6,$E8,$A0,$02,$B1 ; E548 D0 F7 4C D6 E8 A0 02 B1  ..L.....
-        .byte   $E9,$29,$DF,$D9,$2E,$CD,$D0,$05 ; E550 E9 29 DF D9 2E CD D0 05  .)......
-        .byte   $88,$10,$F4,$30,$0F,$A0,$02,$B1 ; E558 88 10 F4 30 0F A0 02 B1  ...0....
-        .byte   $E9,$29,$DF,$D9,$2B,$CD,$D0,$0C ; E560 E9 29 DF D9 2B CD D0 0C  .)..+...
-        .byte   $88,$10,$F4,$18,$08,$A0,$03,$20 ; E568 88 10 F4 18 08 A0 03 20  ....... 
-        .byte   $E3,$D1,$28,$60,$4C,$23,$DE,$A2 ; E570 E3 D1 28 60 4C 23 DE A2  ..(`L#..
-        .byte   $12,$4C,$7E,$D6,$4C,$20,$DE,$20 ; E578 12 4C 7E D6 4C 20 DE 20  .L~.L . 
-        .byte   $4D,$E9,$A9,$00,$8D,$1C,$C0,$8D ; E580 4D E9 A9 00 8D 1C C0 8D  M.......
-        .byte   $1B,$C0,$6A,$8D,$18,$C0,$A0,$37 ; E588 1B C0 6A 8D 18 C0 A0 37  ..j....7
-        .byte   $A2,$FF,$8C,$19,$C0,$8E,$1A,$C0 ; E590 A2 FF 8C 19 C0 8E 1A C0  ........
-        .byte   $60,$20,$FA,$D2,$8D,$1C,$C0,$8C ; E598 60 20 FA D2 8D 1C C0 8C  ` ......
+        .byte   $D0,$F7,$4C,$D6,$E8
+		
+		
+	
+
+LE94D:  ldy     #$02                            ; E94D A0 02                    ..
+LE94F:  lda     ($E9),y                         ; E94F B1 E9                    ..
+        and     #$DF                            ; E951 29 DF                    ).
+        cmp     LCD2E,y                         ; E953 D9 2E CD                 ... 
+        bne     LE95D                           ; E956 D0 05                    ..
+        dey                                     ; E958 88                       .
+        bpl     LE94F                           ; E959 10 F4                    ..
+        bmi     LE96C                           ; E95B 30 0F                    0.
+LE95D:  ldy     #$02                            ; E95D A0 02                    ..
+LE95F:  lda     ($E9),y                         ; E95F B1 E9                    ..
+        and     #$DF                            ; E961 29 DF                    ).
+        cmp     LCD2B,y                         ; E963 D9 2B CD                 .+.
+        bne     LE974                           ; E966 D0 0C                    .. popme
+        dey                                     ; E968 88                       .
+        bpl     LE95F                           ; E969 10 F4                    ..
+        clc                                     ; E96B 18                       .
+LE96C:  php                                     ; E96C 08                       .
+        ldy     #$03                            ; E96D A0 03                    ..
+        jsr     LD1E3                           ; E96F 20 E3 D1                  .. popme
+        plp                                     ; E972 28                       (
+        rts                                     ; E973 60                       `
+
+
+; ----------------------------------------------------------------------------
+
+LE974:  jmp     LDE23                           ; E974 4C 23 DE                 L#.
+		
+
+
+		
+		
+		.byt    $A2 ; E570 E3 D1 28 60 4C 23 DE A2  ..(`L#..
+        .byte   $12,$4C,$7E,$D6
+		
+LE97C:  jmp     LDE20                           ; E97C 4C 20 DE                 L .		
+
+		
+SEDORIC_COMMAND_ERR:
+        jsr     LE94D                           ; E97F 20 4D E9                  M. popme
+        lda     #$00                            ; E982 A9 00                    ..
+        sta     $C01C                           ; E984 8D 1C C0                 ...
+        sta     $C01B                           ; E987 8D 1B C0                 ...
+        ror                                   ; E98A 6A                       j
+        sta     SEDORIC_FLAGERR                 ; E98B 8D 18 C0                 ...
+        ldy     #$37                            ; E98E A0 37                    .7
+        ldx     #$FF                            ; E990 A2 FF                    ..
+        sty     $C019                           ; E992 8C 19 C0                 ...
+        stx     $C01A                           ; E995 8E 1A C0                 ...
+LE998:  rts                                     ; E998 60                       `
+
+		
+
+		
+		.byt    $20,$FA,$D2,$8D,$1C,$C0,$8C ; E598 60 20 FA D2 8D 1C C0 8C  ` ......
         .byte   $1B,$C0,$20,$9C,$D1,$A6,$CF,$A4 ; E5A0 1B C0 20 9C D1 A6 CF A4  .. .....
         .byte   $CE,$D0,$01,$CA,$88,$4C,$92,$E9 ; E5A8 CE D0 01 CA 88 4C 92 E9  .....L..
         .byte   $20,$7F,$D2,$E0,$32,$90,$C5,$CA ; E5B0 20 7F D2 E0 32 90 C5 CA   ...2...
@@ -3543,10 +3877,16 @@ LEA47
         .byte   $EA,$EA,$EA,$EA,$EA,$EA,$EA,$EA ; E778 EA EA EA EA EA EA EA EA  ........
         .byte   $EA,$EA,$EA,$EA,$EA,$EA,$EA,$EA ; E780 EA EA EA EA EA EA EA EA  ........
         .byte   $EA,$EA,$EA,$EA,$EA,$EA,$EA,$EA ; E788 EA EA EA EA EA EA EA EA  ........
-        .byte   $EA,$20,$4D,$E9,$20,$DE,$DF,$AD ; E790 EA 20 4D E9 20 DE DF AD  . M. ...
-        .byte   $3D,$C0,$29,$80,$90,$02,$09,$40 ; E798 3D C0 29 80 90 02 09 40   .)....@
-        .byte   $8D,$3D,$C0
-		
+        .byte   $EA
+
+SEDORIC_COMMAND_ACCENT:
+        jsr     LE94D                           ; EB91 20 4D E9                  M.
+        jsr     LDFDE                           ; EB94 20 DE DF                  ..
+        lda     SEDORIC_MODCLA                  ; EB97 AD 3D C0                 .=.
+        and     #$80                            ; EB9A 29 80                    ).
+        bcc     LEBA0                           ; EB9C 90 02                    ..
+        ora     #$40                            ; EB9E 09 40                    .@
+LEBA0:  sta     SEDORIC_MODCLA                  ; EBA0 8D 3D C0                 .=.		
 
 
 ; XCHAR sélectionne le jeu de caractères correct (“normal” ou “accentué”) selon MODCLA. Suite commune aux commandes ACCENT, AZERTY, QWERTY et à la routine XSTATUS en EC17
@@ -3590,9 +3930,19 @@ LEBCE:  lda     ACCENTED_FONT,x                 ; EBCE BD 4D CD                 
         bne     LEBB3                           ; EBDB D0 D6                    ..
 LEBDD:  rts                                     ; EBDD 60                       `
 
-		.byt    $A9,$C0 ; E7D8 F5 C6 F2 D0 D6 60 A9 C0  .....`..
-        .byte   $2C,$A9,$00,$8D,$3D,$C0,$20,$DE ; E7E0 2C A9 00 8D 3D C0 20 DE  ,... . .
-        .byte   $DF,$4C,$A3,$EB,$AD,$69,$02,$AC ; E7E8 DF 4C A3 EB AD 69 02 AC  .L...i..
+LEBDE
+
+SEDORIC_COMMAND_AZERTY:
+        lda     #$C0                            ; EBDE A9 C0                    ..
+        .byte   $2C                             ; EBE0 2C                       ,
+SEDORIC_COMMAND_QWERTY:
+        lda     #$00                            ; EBE1 A9 00                    ..
+        sta     SEDORIC_MODCLA                  ; EBE3 8D 3D C0                 .=.
+        jsr     LDFDE                           ; EBE6 20 DE DF                  ..
+        jmp     SEDORIC_XCHAR                   ; EBE9 4C A3 EB                 L..
+
+
+		.byt    $AD,$69,$02,$AC ; E7E8 DF 4C A3 EB AD 69 02 AC  .L...i..
         .byte   $68,$02,$4C,$FB,$EB,$AD,$19,$02 ; E7F0 68 02 4C FB EB AD 19 02  h.L.....
         .byte   $AC,$1A,$02,$48,$98,$20,$E7,$D7 ; E7F8 AC 1A 02 48 98 20 E7 D7  ...H. ..
         .byte   $68,$4C,$E4,$D7,$08,$48,$AD,$F9 ; E800 68 4C E4 D7 08 48 AD F9  hL...H..
@@ -3847,7 +4197,6 @@ LEE79:  pla                                     ; EE79 68                       
 LEE8C:  pla                                     ; EE8C 68                       h
         rts    		
 
-		
 		.byt $A0,$02 ; EA88 29 FE F0 ED 68 60 A0 02  )...h`..
         .byte   $B9,$D0,$00,$91,$B8,$88,$10,$F8 ; EA90 B9 D0 00 91 B8 88 10 F8  ........
         .byte   $60,$20,$16,$D2,$20,$D2,$D2,$20 ; EA98 60 20 16 D2 20 D2 D2 20  ` .. .. 
@@ -3902,27 +4251,145 @@ LEE8C:  pla                                     ; EE8C 68                       
         .byte   $05,$96,$C5,$C8,$D0,$F4,$86,$F6 ; EC20 05 96 C5 C8 D0 F4 86 F6  ........
         .byte   $4C,$1A,$EF,$A4,$F4,$B1,$91,$E6 ; EC28 4C 1A EF A4 F4 B1 91 E6  L.......
         .byte   $F4,$A4,$F5,$A2,$FF,$60,$20,$C5 ; EC30 F4 A4 F5 A2 FF 60 20 C5  .....` .
-        .byte   $E7,$20,$99,$EE,$4C,$D6,$E7,$A2 ; EC38 E7 20 99 EE 4C D6 E7 A2  . ..L...
-        .byte   $05,$BD,$1A,$CD,$9D,$DF,$BF,$BD ; EC40 05 BD 1A CD 9D DF BF BD  ........
-        .byte   $1F,$CD,$9D,$E9,$BF,$CA,$D0,$F1 ; EC48 1F CD 9D E9 BF CA D0 F1  ........
-        .byte   $E8,$8E,$72,$C0,$A9,$41,$A0,$4E ; EC50 E8 8E 72 C0 A9 41 A0 4E  ..r..A.N
-        .byte   $85,$B4,$84,$B5,$20,$44,$D2,$20 ; EC58 85 B4 84 B5 20 44 D2 20  .... D. 
-        .byte   $BA,$D2,$A9,$E0,$A0,$BF,$20,$AA ; EC60 BA D2 A9 E0 A0 BF 20 AA  ...... .
-        .byte   $D2,$A2,$E0,$A0,$BF,$20,$C2,$D2 ; EC68 D2 A2 E0 A0 BF 20 C2 D2  ..... ..
-        .byte   $AD,$1F,$02,$D0,$03,$4C,$6F,$D1 ; EC70 AD 1F 02 D0 03 4C 6F D1  .....Lo.
-        .byte   $60,$20,$3F,$F0,$20,$16,$D2,$A2 ; EC78 60 20 3F F0 20 16 D2 A2  ` ?. ...
-        .byte   $E5,$A0,$BF,$20,$C2,$D2,$A2,$00 ; EC80 E5 A0 BF 20 C2 D2 A2 00  ... ....
-        .byte   $86,$F2,$A9,$E0,$A0,$BF,$20,$BA ; EC88 86 F2 A9 E0 A0 BF 20 BA  ...... .
-        .byte   $D2,$A6,$F2,$F0,$09,$20,$F2,$D2 ; EC90 D2 A6 F2 F0 09 20 F2 D2  ..... ..
-        .byte   $20,$DA,$D2,$4C,$A1,$F0,$20,$EA ; EC98 20 DA D2 4C A1 F0 20 EA   ..L.. .
-        .byte   $D2,$A9,$E5,$A0,$BF,$20,$AA,$D2 ; ECA0 D2 A9 E5 A0 BF 20 AA D2  ..... ..
+        .byte   $E7,$20,$99,$EE,$4C,$D6,$E7
+
+
+
+LF03F:  ldx     #$05                            ; F03F A2 05                    ..
+LF041:  lda     LCD1A,x                         ; F041 BD 1A CD                 ... popme
+        sta     $BFDF,x                         ; F044 9D DF BF                 ...
+        lda     LCD1F,x                         ; F047 BD 1F CD                 ...
+        sta     $BFE9,x                         ; F04A 9D E9 BF                 ...
+        dex                                     ; F04D CA                       .
+        bne     LF041                           ; F04E D0 F1                    ..
+        inx                                     ; F050 E8                       .
+        stx     $C072                           ; F051 8E 72 C0                 .r.
+        lda     #$41                            ; F054 A9 41                    .A
+        ldy     #$4E                            ; F056 A0 4E                    .N
+        sta     $B4                             ; F058 85 B4                    ..
+        sty     $B5                             ; F05A 84 B5                    ..
+        jsr     LD244                           ; F05C 20 44 D2                  D.
+        jsr     LD2BA                           ; F05F 20 BA D2                  ..
+        lda     #$E0                            ; F062 A9 E0                    .. FIXME
+        ldy     #$BF                            ; F064 A0 BF                    .. FIXME
+        jsr     LD2AA                           ; F066 20 AA D2                  ..
+        ldx     #$E0                            ; F069 A2 E0                    .. FIXME
+        ldy     #$BF                            ; F06B A0 BF                    .. FIXME
+        jsr     LD2C2                           ; F06D 20 C2 D2                  ..
+        lda     $021F                           ; F070 AD 1F 02                 ...
+        bne     LF078                           ; F073 D0 03                    .. popme
+        jmp     SEDORIC_DISPLAY_TYPE_MISMATCH   ; F075 4C 6F D1                 Lo.
+
+LF078
+        rts
+
+SEDORIC_COMMAND_LINE:
+        jsr     LF03F                           ; F079 20 3F F0                  ?.
+        jsr     LD216                           ; F07C 20 16 D2                  ..
+LF07F:  ldx     #$E5                            ; F07F A2 E5                    .. FIXME
+        ldy     #$BF                            ; F081 A0 BF                    .. FIXME
+        jsr     LD2C2                           ; F083 20 C2 D2                  ..
+        ldx     #$00                            ; F086 A2 00                    ..
+LF088:  stx     SEDORIC_TRAV0                   ; F088 86 F2                    ..
+        lda     #$E0                            ; F08A A9 E0                    .. FIXME
+        ldy     #$BF                            ; F08C A0 BF                    .. FIXME
+        jsr     LD2BA                           ; F08E 20 BA D2                  ..
+        ldx     SEDORIC_TRAV0                   ; F091 A6 F2                    ..
+        beq     LF09E                           ; F093 F0 09                    .. popme
+        jsr     LD2F2                           ; F095 20 F2 D2                  ..
+        jsr     LD2DA                           ; F098 20 DA D2                  ..
+        jmp     LF0A1                           ; F09B 4C A1 F0                 L.. popme
+
+	
+
+
+	
+/*
+CMD_BOX:jsr     LF03F                           ; F0DE 20 3F F0                  ?. popme
+        jsr     LD27F                           ; F0E1 20 7F D2                  ..
+        stx     SEDORIC_TRAV1                   ; F0E4 86 F3                    ..
+        jsr     LD22C                           ; F0E6 20 2C D2                  ,.
+        jsr     LD27F                           ; F0E9 20 7F D2                  ..
+        stx     SEDORIC_TRAV2                   ; F0EC 86 F4                    ..
+        lda     #$04                            ; F0EE A9 04                    ..
+        sta     SEDORIC_TRAV3                   ; F0F0 85 F5                    ..
+        lda     #$00                            ; F0F2 A9 00                    ..
+        sta     SEDORIC_TRAV4                   ; F0F4 85 F6                    ..
+LF0F6:  ldx     SEDORIC_TRAV4                   ; F0F6 A6 F6                    ..
+        txa                                     ; F0F8 8A                       .
+        eor     #$01                            ; F0F9 49 01                    I.
+        sta     SEDORIC_TRAV4                   ; F0FB 85 F6                    ..
+        ldy     SEDORIC_TRAV1,x                 ; F0FD B4 F3                    ..
+        lda     #$00                            ; F0FF A9 00                    ..
+        jsr     LD2CA                           ; F101 20 CA D2                  ..
+        jsr     LF07F                           ; F104 20 7F F0                  .. popme
+        lda     #$E0                            ; F107 A9 E0                    .. FIXME
+        ldy     #$BF                            ; F109 A0 BF                    .. FIXME
+        jsr     LD2BA                           ; F10B 20 BA D2                  ..
+        lda     #$EA                            ; F10E A9 EA                    .. FIXME
+        ldy     #$BF                            ; F110 A0 BF                    .. FIXME
+        jsr     LD2A2                           ; F112 20 A2 D2                  ..
+        ldx     #$E0                            ; F115 A2 E0                    ..
+        ldy     #$BF                            ; F117 A0 BF                    ..
+        jsr     LD2C2                           ; F119 20 C2 D2                  ..
+        dec     SEDORIC_TRAV3                   ; F11C C6 F5                    ..
+        bne     LF0F6                           ; F11E D0 D6                    ..
+        rts                                     ; F120 60                       `
+
+*/	
+		
+
+LF09E:  jsr     LD2EA                           ; F09E 20 EA D2                  ..	
+		
+
+
+LF0A1:  lda     #$E5                            ; F0A1 A9 E5                    .. FIXME
+        ldy     #$BF                            ; F0A3 A0 BF                    .. FIXME
+        jsr     LD2AA                           ; F0A5 20 AA D2                  ..
+        jsr     LD28A                           ; F0A8 20 8A D2                  ..
+        tax                                     ; F0AB AA                       .
+        beq     LF0B2                           ; F0AC F0 04                    ..
+        iny                                     ; F0AE C8                       .
+        bne     LF0B2                           ; F0AF D0 01                    ..
+        inx                                     ; F0B1 E8                       .
+LF0B2:  txa                                     ; F0B2 8A                       .
+        ldx     SEDORIC_TRAV0                   ; F0B3 A6 F2                    ..
+        sta     BASIC11_PARAMS+2,x              ; F0B5 9D E2 02                 ...
+        tya                                     ; F0B8 98                       .
+        sta     BASIC11_PARAMS+1,x              ; F0B9 9D E1 02                 ...
+        inx                                     ; F0BC E8                       .
+        inx                                     ; F0BD E8                       .
+        cpx     #$02                            ; F0BE E0 02                    ..
+        beq     LF088                           ; F0C0 F0 C6                    ..
+        lsr     $C072                           ; F0C2 4E 72 C0                 Nr.
+        bcc     LF0D3                           ; F0C5 90 0C                    ..
+        jsr     LD22C                           ; F0C7 20 2C D2                  ,.
+        jsr     LD2FA                           ; F0CA 20 FA D2                  ..
+        sty     BASIC11_PARAMS+5                ; F0CD 8C E5 02                 ...
+        sta     BASIC11_PARAMS+6                ; F0D0 8D E6 02                 ...
+LF0D3:  jsr     LD312                           ; F0D3 20 12 D3                  ..
+        lsr     BASIC11_PARAMS                  ; F0D6 4E E0 02                 N..
+        bcc     LF078                           ; F0D9 90 9D                    ..
+        jmp     LE97C                           ; F0DB 4C 7C E9                 L|.
+	
+/*	
+	.byt    $A9,$E5,$A0,$BF,$20,$AA,$D2 ; ECA0 D2 A9 E5 A0 BF 20 AA D2  ..... ..
         .byte   $20,$8A,$D2,$AA,$F0,$04,$C8,$D0 ; ECA8 20 8A D2 AA F0 04 C8 D0   .......
         .byte   $01,$E8,$8A,$A6,$F2,$9D,$E2,$02 ; ECB0 01 E8 8A A6 F2 9D E2 02  ........
         .byte   $98,$9D,$E1,$02,$E8,$E8,$E0,$02 ; ECB8 98 9D E1 02 E8 E8 E0 02  ........
         .byte   $F0,$C6,$4E,$72,$C0,$90,$0C,$20 ; ECC0 F0 C6 4E 72 C0 90 0C 20  ..Nr... 
         .byte   $2C,$D2,$20,$FA,$D2,$8C,$E5,$02 ; ECC8 2C D2 20 FA D2 8C E5 02  ,. .....
         .byte   $8D,$E6,$02,$20,$12,$D3,$4E,$E0 ; ECD0 8D E6 02 20 12 D3 4E E0  ... ..N.
-        .byte   $02,$90,$9D,$4C,$7C,$E9,$20,$3F ; ECD8 02 90 9D 4C 7C E9 20 3F  ...L|. ?
+        .byte   $02,$90,$9D,$4C,$7C,$E9
+	*/	
+		
+		
+		
+		
+		
+		
+		
+		.byt   $20,$3F ; ECD8 02 90 9D 4C 7C E9 20 3F  ...L|. ?
         .byte   $F0,$20,$7F,$D2,$86,$F3,$20,$2C ; ECE0 F0 20 7F D2 86 F3 20 2C  . .... ,
         .byte   $D2,$20,$7F,$D2,$86,$F4,$A9,$04 ; ECE8 D2 20 7F D2 86 F4 A9 04  . ......
         .byte   $85,$F5,$A9,$00,$85,$F6,$A6,$F6 ; ECF0 85 F5 A9 00 85 F6 A6 F6  ........
@@ -3931,7 +4398,9 @@ LEE8C:  pla                                     ; EE8C 68                       
         .byte   $E0,$A0,$BF,$20,$BA,$D2,$A9,$EA ; ED08 E0 A0 BF 20 BA D2 A9 EA  ... ....
         .byte   $A0,$BF,$20,$A2,$D2,$A2,$E0,$A0 ; ED10 A0 BF 20 A2 D2 A2 E0 A0  .. .....
         .byte   $BF,$20,$C2,$D2,$C6,$F5,$D0,$D6 ; ED18 BF 20 C2 D2 C6 F5 D0 D6  . ......
-        .byte   $60,$A0,$1B,$2C,$A0,$18,$2C,$A0 ; ED20 60 A0 1B 2C A0 18 2C A0  `..,..,.
+        .byte   $60
+		
+		.byt    $A0,$1B,$2C,$A0,$18,$2C,$A0 ; ED20 60 A0 1B 2C A0 18 2C A0  `..,..,.
         .byte   $15,$2C,$A0,$12,$2C,$A0,$0F,$2C ; ED28 15 2C A0 12 2C A0 0F 2C  .,..,..,
         .byte   $A0,$0C,$A2,$56,$D0,$28,$A2,$42 ; ED30 A0 0C A2 56 D0 28 A2 42  ...V.(.B
         .byte   $2C,$A2,$56,$2C,$A2,$4C,$A0,$09 ; ED38 2C A2 56 2C A2 4C A0 09  ,.V,.L..
@@ -4040,8 +4509,7 @@ LF206:  iny                                     ; F206 C8                       
         bne     LF1F0                           ; F209 D0 E5                    ..
         cli                                     ; F20B 58                       X
         rts      		
-		
-		
+
 		
 		.byt   $4C,$E0,$E0 ; EE08 F5 D0 E5 58 60 4C E0 E0  ...X`L..
         .byte   $F0,$27,$20,$4F,$D4,$20,$9E,$D7 ; EE10 F0 27 20 4F D4 20 9E D7  .' O. ..
@@ -4099,9 +4567,16 @@ LF206:  iny                                     ; F206 C8                       
         .byte   $D0,$F6,$A0,$02,$B9,$D0,$00,$91 ; EFB0 D0 F6 A0 02 B9 D0 00 91  ........
         .byte   $B6,$88,$10,$F8,$A9,$09,$20,$EC ; EFB8 B6 88 10 F8 A9 09 20 EC  ...... .
         .byte   $F2,$30,$0B,$20,$CA,$F2,$D0,$F4 ; EFC0 F2 30 0B 20 CA F2 D0 F4  .0. ....
-        .byte   $4C,$3C,$F3,$4C,$77,$E9,$60,$A5 ; EFC8 4C 3C F3 4C 77 E9 60 A5  L<.Lw.`.
-        .byte   $0A,$0A,$69,$08,$D0,$0B,$A0,$04 ; EFD0 0A 0A 69 08 D0 0B A0 04  ..i.....
-   
+        .byte   $4C,$3C,$F3,$4C,$77,$E9,$60
+		
+
+; ----------------------------------------------------------------------------
+LF3CF:  lda     $0A                             ; F3CF A5 0A                    ..
+        asl                                ; F3D1 0A                       .
+        adc     #$08                            ; F3D2 69 08                    i.
+        bne     LF3E1                           ; F3D4 D0 0B                    ..
+LF3D6:  ldy     #$04                            ; F3D6 A0 04                    ..
+	
 
 LF3D8:  lda     ($9E),y                         ; F3D8 B1 9E                    ..
         pha                                     ; F3DA 48                       H
@@ -4205,16 +4680,44 @@ LF456:  stx     $CE                             ; F456 86 CE                    
         tay                                     ; F46E A8                       .
         pla                                     ; F46F 68                       h
         jmp     SEDORIC_SHIFT_BLOCK_MEMORY_UP   ; F470 4C 5C D1                 L\.
+/*
 
+      
+*/		
 		.byt   $48,$20,$F3,$F3,$68 ; F070 4C 5C D1 48 20 F3 F3 68  L\.H ..h
-        .byte   $AA,$18,$08,$90,$0A,$18,$24,$38 ; F078 AA 18 08 90 0A 18 24 38  ......$8
-        .byte   $08,$20,$F3,$F3,$20,$7F,$D2,$E0 ; F080 08 20 F3 F3 20 7F D2 E0  . .. ...
-        .byte   $40,$B0,$1A,$86,$0A,$20,$CF,$F3 ; F088 40 B0 1A 86 0A 20 CF F3  @.... ..
-        .byte   $C8,$28,$B1,$F2,$D0,$0A,$B0,$0A ; F090 C8 28 B1 F2 D0 0A B0 0A  .(......
-        .byte   $A2,$0D,$2C,$A2,$0E,$4C,$7E,$D6 ; F098 A2 0D 2C A2 0E 4C 7E D6  ..,..L~.
-        .byte   $B0,$F9,$4C,$9E,$D3,$4C,$20,$DE ; F0A0 B0 F9 4C 9E D3 4C 20 DE  ..L..L .
-     
+        .byte   $AA,$18,$08,$90,$0A
+		
+LF47D:  clc                                     ; F47D 18                       .
+        .byte   $24                             ; F47E 24                       $
+LF47F:  sec                                     ; F47F 38                       8
+        php                                     ; F480 08                       .
+        jsr     LF3F3                           ; F481 20 F3 F3                  ..
+        jsr     LD27F                           ; F484 20 7F D2                  ..
+LF487:  cpx     #$40                            ; F487 E0 40                    .@
+        bcs     LF4A5                           ; F489 B0 1A                    .. 
+        stx     $0A                             ; F48B 86 0A                    ..
+        jsr     LF3CF                           ; F48D 20 CF F3                  .. popme
+        iny                                     ; F490 C8                       .
+        plp                                     ; F491 28                       (
+        lda     (SEDORIC_TRAV0),y               ; F492 B1 F2                    ..
 
+		bne     LF4A0                           ; F494 D0 0A                    ..
+		bcs     LF4A2                           ; F496 B0 0A                    ..
+        ldx     #$0D                            ; F498 A2 0D                    ..
+        .byte   $2C                             ; F49A 2C                       ,
+	
+		
+		
+LF49B:  ldx     #$0E                            ; F49B A2 0E                    ..
+        jmp     LD67E                           ; F49D 4C 7E D6                 L~.			
+	
+LF4A0:  bcs     LF49B                           ; F4A0 B0 F9                    ..
+
+LF4A2:  jmp     LD39E                           ; F4A2 4C 9E D3                 L..     
+
+	 
+	 
+LF4A5:  jmp     LDE20                           ; F4A5 4C 20 DE                 L .
 
 LF4A8:  lda     #$88                            ; F4A8 A9 88                    ..
         ldy     #$00                            ; F4AA A0 00                    ..
@@ -4511,7 +5014,8 @@ LF885:  sec                                     ; F885 38                       
         sbc     $9F                             ; F88A E5 9F                    ..
         tay                                     ; F88C A8                       .
         rts                                     ; F88D 60                       `		
-		
+	
+
 		.byt $20,$4C ; F488 AA 98 E5 9F A8 60 20 4C  .....` L
         .byte   $D2,$A5,$D4,$A6,$D3,$10,$0C,$49 ; F490 D2 A5 D4 A6 D3 10 0C 49  .......I
         .byte   $FF,$18,$69,$01,$E0,$FF,$F0,$07 ; F498 FF 18 69 01 E0 FF F0 07  ..i.....
@@ -4538,7 +5042,8 @@ LF885:  sec                                     ; F885 38                       
         .byte   $04,$C8,$A5,$34,$91,$04,$20,$5F ; F540 04 C8 A5 34 91 04 20 5F  ...4.. _
         .byte   $F8,$A0,$13,$B1,$00,$48,$C8,$B1 ; F548 F8 A0 13 B1 00 48 C8 B1  .....H..
         .byte   $00,$A8,$68,$4C,$9E,$DA
-		
+
+
 		.byt    $20,$7D ; F550 00 A8 68 4C 9E DA 20 7D  ..hL.. }
         .byte   $F4,$20,$2C,$D2,$20,$A8,$F4,$48 ; F558 F4 20 2C D2 20 A8 F4 48  . ,. ..H
         .byte   $A0,$06,$B1,$00,$8D,$00,$C0,$68 ; F560 A0 06 B1 00 8D 00 C0 68  .......h
@@ -4565,7 +5070,8 @@ LF885:  sec                                     ; F885 38                       
         .byte   $91,$AA,$A0,$80,$8C,$7F,$C0,$20 ; F608 91 AA A0 80 8C 7F C0 20  ....... 
         .byte   $39,$FA,$A9,$FF,$20,$CC,$FD,$91 ; F610 39 FA A9 FF 20 CC FD 91  9... ...
         .byte   $02,$30,$10,$20,$D9,$FD,$48,$8A ; F618 02 30 10 20 D9 FD 48 8A  .0. ..H.
-        .byte   $20,$7D,$F6,$20,$2A,$FD,$68,$AA ; F620 20 7D F6 20 2A FD 68 AA   }. *.h.
+     
+		.byte   $20,$7D,$F6,$20,$2A,$FD,$68,$AA ; F620 20 7D F6 20 2A FD 68 AA   }. *.h.
         .byte   $20,$39,$FA,$20,$9E,$D3,$F0,$06 ; F628 20 39 FA 20 9E D3 F0 06   9. ....
         .byte   $20,$2C,$D2,$4C,$EF,$F9,$4C,$46 ; F630 20 2C D2 4C EF F9 4C 46   ,.L..LF
         .byte   $FD,$8E,$7E,$C0,$A5,$06,$A4,$07 ; F638 FD 8E 7E C0 A5 06 A4 07  ..~.....
@@ -4576,7 +5082,11 @@ LF885:  sec                                     ; F885 38                       
         .byte   $00,$C0,$20,$7F,$F4,$F0,$06,$20 ; F660 00 C0 20 7F F4 F0 06 20  .. .... 
         .byte   $2C,$D2,$20,$0D,$E6,$A9,$00,$A0 ; F668 2C D2 20 0D E6 A9 00 A0  ,. .....
         .byte   $01,$20,$CB,$FA,$A0,$06,$AD,$00 ; F670 01 20 CB FA A0 06 AD 00  . ......
-        .byte   $C0,$91,$00,$60,$C9,$52,$D0,$12 ; F678 C0 91 00 60 C9 52 D0 12  ...`.R..
+        .byte   $C0,$91,$00
+LFA7B		
+		rts
+		
+		.byt  $C9,$52,$D0,$12 ; F678 C0 91 00 60 C9 52 D0 12  ...`.R..
         .byte   $A9,$00,$A0,$08,$20,$08,$FB,$D0 ; F680 A9 00 A0 08 20 08 FB D0  .... ...
         .byte   $F2,$20,$2C,$D2,$4C,$D8,$F9,$4C ; F688 F2 20 2C D2 4C D8 F9 4C  . ,.L..L
         .byte   $23,$DE,$C9,$53,$D0,$F9,$A9,$80 ; F690 23 DE C9 53 D0 F9 A9 80  #..S....
@@ -4585,8 +5095,28 @@ LF885:  sec                                     ; F885 38                       
         .byte   $00,$C8,$91,$00,$28,$D0,$09,$A0 ; F6A8 00 C8 91 00 28 D0 09 A0  ....(...
         .byte   $00,$A9,$FF,$91,$02,$4C,$46,$FD ; F6B0 00 A9 FF 91 02 4C 46 FD  .....LF.
         .byte   $4C,$44,$FD,$20,$C0,$FA,$30,$DD ; F6B8 4C 44 FD 20 C0 FA 30 DD  LD. ..0.
-        .byte   $20,$7D,$F4,$20,$A8,$F4,$30,$B3 ; F6C0 20 7D F4 20 A8 F4 30 B3   }. ..0.
-        .byte   $4C,$E0,$E0,$48,$98,$48,$A0,$05 ; F6C8 4C E0 E0 48 98 48 A0 05  L..H.H..
+       
+
+
+
+
+
+
+
+
+LFAC0:  jsr     LF47D                           ; FAC0 20 7D F4                  }. popme
+        jsr     LF4A8                           ; FAC3 20 A8 F4                  ..
+        bmi     LFA7B                           ; FAC6 30 B3                    0. popme
+        jmp     LE0E0                           ; FAC8 4C E0 E0                 L..
+
+	
+		
+
+
+
+
+		
+		.byt    $48,$98,$48,$A0,$05 ; F6C8 4C E0 E0 48 98 48 A0 05  L..H.H..
 
         .byte   $B1,$9E,$D0,$02,$A0,$03,$88,$B1 ; F6D0 B1 9E D0 02 A0 03 88 B1  ........
         .byte   $9E,$AA,$48,$C8,$B1,$9E,$48,$A8 ; F6D8 9E AA 48 C8 B1 9E 48 A8  ..H...H.
@@ -4817,14 +5347,37 @@ LFDF0:  jsr     LFD7A                           ; FDF0 20 7A FD                 
         rts                                     ; FE05 60                       `
 
 	
-		.byt   $EA,$20 ; FA00 06 AA C8 B1 06 60 EA 20  .....`. 
-        .byte   $C0,$FA,$A9,$FF,$85,$33,$85,$34 ; FA08 C0 FA A9 FF 85 33 85 34  .....3.4
-        .byte   $30,$09,$20,$C0,$FA,$20,$2C,$D2 ; FA10 30 09 20 C0 FA 20 2C D2  0. .. ,.
-        .byte   $20,$FA,$D2,$08,$78,$A5,$33,$05 ; FA18 20 FA D2 08 78 A5 33 05   ...x.3.
-        .byte   $34,$F0,$13,$A5,$33,$D0,$02,$C6 ; FA20 34 F0 13 A5 33 D0 02 C6  4...3...
-        .byte   $34,$C6,$33,$20,$0E,$FD,$F0,$06 ; FA28 34 C6 33 20 0E FD F0 06  4.3 ....
-        .byte   $20,$D9,$FD,$4C,$1D,$FE,$28,$60 ; FA30 20 D9 FD 4C 1D FE 28 60   ..L..(`
+		nop
+
+SEDORIC_COMMAND_APPEND:
+        jsr     LFAC0                           ; FE07 20 C0 FA                  .. 
+        lda     #$FF                            ; FE0A A9 FF                    ..
+        sta     $33                             ; FE0C 85 33                    .3
+        sta     $34                             ; FE0E 85 34                    .4
+        bmi     LFE1B                           ; FE10 30 09                    0.
+        jsr     LFAC0                           ; FE12 20 C0 FA                  ..
+        jsr     LD22C                           ; FE15 20 2C D2                  ,.
+        jsr     LD2FA                           ; FE18 20 FA D2                  ..
+LFE1B:  php                                     ; FE1B 08                       .
+        sei                                     ; FE1C 78                       x
+LFE1D:  lda     $33                             ; FE1D A5 33                    .3
+        ora     $34                             ; FE1F 05 34                    .4
+        beq     LFE36                           ; FE21 F0 13                    ..
+        lda     $33                             ; FE23 A5 33                    .3
+        bne     LFE29                           ; FE25 D0 02                    ..
+        dec     $34                             ; FE27 C6 34                    .4
+LFE29:  dec     $33                             ; FE29 C6 33                    .3
+        jsr     LFD0E                           ; FE2B 20 0E FD                  ..
+        beq     LFE36                           ; FE2E F0 06                    ..
+        jsr     LFDD9                           ; FE30 20 D9 FD                  ..
+        jmp     LFE1D                           ; FE33 4C 1D FE                 L..		
+		
+
      
+	 ; ----------------------------------------------------------------------------
+LFE36:  plp                                     ; FE36 28                       (
+        rts                                     ; FE37 60                       `
+
 
 ; ----------------------------------------------------------------------------
 LFE38:  ldy     #$00                            ; FE38 A0 00                    ..
@@ -4898,7 +5451,7 @@ SEDORIC_VECTORS:
         jmp     LD451                           ; FF4F 4C 51 D4                 LQ.
 
 ; ----------------------------------------------------------------------------
-        jmp     LD364                           ; FF52 4C 64 D3                 Ld.
+        jmp     XAFSC                           ; FF52 4C 64 D3                 Ld.
 
 ; ----------------------------------------------------------------------------
         jmp     LF3F3                           ; FF55 4C F3 F3                 L..
