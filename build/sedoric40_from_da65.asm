@@ -2509,7 +2509,7 @@ LD89B:  cmp     QWAZERTY_CONV,x                 ; D89B DD 41 CD                 
         dex                                     ; D8A0 CA                       .
         bpl     LD89B                           ; D8A1 10 F8                    ..
         lda     $C046                           ; D8A3 AD 46 C0                 .F.
-LD8A6:  ldx     LEA47                           ; D8A6 AE 47 EA                 .G.
+LD8A6:  ldx     LEA47                           ; D8A6 AE 47 EA                 .G. FIXME bug
         jmp     LD86F                           ; D8A9 4C 6F D8                 Lo.
 
 ; ----------------------------------------------------------------------------
@@ -7464,8 +7464,10 @@ LFC6E:  ldx     #$11                            ; FC6E A2 11                    
         jmp     LD67E                           ; FC70 4C 7E D6                 L~.
 
 ; ----------------------------------------------------------------------------
+SEDORIC_LSET_COMMAND
         clc                                     ; FC73 18                       .
-        bit     $38                             ; FC74 24 38                    $8
+		.byt    $24
+        sec
         php                                     ; FC76 08                       .
         jsr     LF3F3                           ; FC77 20 F3 F3                  ..
         jsr     LF640                           ; FC7A 20 40 F6                  @.
