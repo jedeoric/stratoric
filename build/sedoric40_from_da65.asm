@@ -4996,9 +4996,14 @@ LEAE8:  ldy     SEDORIC_TRAV2                   ; EAE8 A4 F4                    
         sta     SEDORIC_EXEVEC+2                ; EAF8 8D F1 04                 ...
         lda     SEDORIC_TRAV0                   ; EAFB A5 F2                    ..
         ldx     SEDORIC_TRAV1                   ; EAFD A6 F3                    ..
-        bit     L0000                           ; EAFF 24 00                    $.
+		
+		; Was in the stratoric cardridge : 
+        bit     L0000                           ; EAFF 24 00                    $. FIXME bug
         brk                                     ; EB01 00                       .
         .byte   $07                             ; EB02 07                       .
+		
+		; corrected version FIXME
+		
         plp                                     ; EB03 28                       (
         jsr     LEB22                           ; EB04 20 22 EB                  ".
         jmp     LEB0E                           ; EB07 4C 0E EB                 L..
@@ -6968,6 +6973,7 @@ LF8D2:  jsr     LFD0E                           ; F8D2 20 0E FD                 
         bmi     LF8C3                           ; F8D9 30 E8                    0.
         lda     #$00                            ; F8DB A9 00                    ..
         beq     LF8C3                           ; F8DD F0 E4                    ..
+SEDORIC_COMMAND_TAKE		
         jsr     LF956                           ; F8DF 20 56 F9                  V.
         bne     LF8EA                           ; F8E2 D0 06                    ..
         jsr     LF96B                           ; F8E4 20 6B F9                  k.
@@ -7467,6 +7473,7 @@ LFC6E:  ldx     #$11                            ; FC6E A2 11                    
 SEDORIC_LSET_COMMAND
         clc                                     ; FC73 18                       .
 		.byt    $24
+SEDORIC_LSET_COMMAND		
         sec
         php                                     ; FC76 08                       .
         jsr     LF3F3                           ; FC77 20 F3 F3                  ..
