@@ -66,11 +66,11 @@
 .bss
 *=$c000
 SEDORIC_DRIVE ; $c000
-	.dsb 1
+    .dsb 1
 SEDORIC_TRACK ;c001
-	.dsb 1
+    .dsb 1
 SEDORIC_SECTOR ; c002
-	.dsb 1
+    .dsb 1
 SEDORIC_RWBUF  ; $c003
     .dsb 2
 SEDORIC_TYPE_OF_ERROR ;$c005
@@ -121,7 +121,7 @@ skip:
 skip2:
 .)
 .(
-		inc     BASIC11_HIMEM_MAX_ADRESS        ; C421 EE C1 02                 ...
+        inc     BASIC11_HIMEM_MAX_ADRESS        ; C421 EE C1 02                 ...
         inc     BASIC11_HIMEM_MAX_ADRESS+1      ; C424 EE C2 02                 ...
         ldx     #$00                            ; C427 A2 00                    ..
 loop:
@@ -292,7 +292,7 @@ LC589
         .byt   $0D,$0A,$00                     ; C596 0D 0A 00                 CRLF and end of string
 
 
-; This part is maybe never called as sedoric à nu said	FIXME Free memory	
+; This part is maybe never called as "sedoric à nu" said	FIXME Free memory	
 LC599
         jmp XAFSC
         rts
@@ -1262,14 +1262,53 @@ LD126
 		
   
 		
+LD12A		
+		.byt  $50
+/*
+Handler NMI (bouton NMI sous l’ORIC)
+Sous-programme vectorisé en FFFA
+*/		
+LD12B		
+		bcc skip16
 		
-		.byt  $50,$90,$05,$A9,$D0,$8D ; CD28 50 50 50 90 05 A9 D0 8D  PPP.....
-        .byte   $10,$03,$38,$4C,$F8,$04,$86,$F3 ; CD30 10 03 38 4C F8 04 86 F3  ..8L....
-        .byte   $A2,$04,$20,$6C,$D3,$38,$A6,$F3 ; CD38 A2 04 20 6C D3 38 A6 F3  .. l.8..
-        .byte   $A5,$F2,$E9,$02,$B0,$01,$CA,$48 ; CD40 A5 F2 E9 02 B0 01 CA 48  .......H
-        .byte   $8A,$20,$13,$D6,$68,$20,$13,$D6 ; CD48 8A 20 13 D6 68 20 13 D6  . ..h ..
-        .byte   $58,$A2,$FF,$9A,$20,$D8,$D5,$AD ; CD50 58 A2 FF 9A 20 D8 D5 AD  X... ...
-        .byte   $C4,$A0,$C4,$60
+		
+		lda #$d0
+		sta $0310
+skip16		
+		sec
+		jmp $04f8
+/*
+Sous-programme affichage "LFCRBREAK_ON_BYTE_#"
+En entrée X/F2 contiennent l'adresse de l'instruction suivant le "BREAK". En sortie, réinitialisation de la
+pile et retour au Ready après affichage du message "LFCR
+BREAK_ON_BYTE_#" et de l'adresse.
+*/
+LD136_maybe		
+        stx $f3
+		ldx #$04
+		JSR LD36C
+		sec
+		ldx $F3
+		lda $f2
+		sbc #$02
+		
+		
+        bcs skip101
+		dex
+skip101		
+		pha
+        txa
+        jsr XAFHEX
+        pla
+		jsr XAFHEX
+        cli
+		ldx #$ff
+		txs
+		
+		jsr SEDORIC_XROM
+        .byte   $AD ; CD50 58 A2 FF 9A 20 D8 D5 AD  X... ...
+        .byte   $C4,$A0,$C4
+		rts
 	
 			; ----------------------------------------------------------------------------
 ; Décale un bloc mémoire vers le haut
